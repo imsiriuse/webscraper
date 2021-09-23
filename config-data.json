@@ -1,0 +1,16 @@
+{
+    "proxies":[],
+    "threads": 3,
+    "timeout":[1000,2500],
+    "starts": ["http://localhost:4321/test1/"],
+    "parsetree": [
+        ["n", ".categorylist"],
+        ["p", ".next"],
+        ["n", ".woocommerce-loop-product__link"]
+    ],
+    "contentselectors": [
+        ".page-title",
+        ".summary .woocommerce-Price-amount",
+        ".woocommerce-Tabs-panel--description p"
+    ]
+}
