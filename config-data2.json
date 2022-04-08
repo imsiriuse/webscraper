@@ -1,0 +1,29 @@
+{
+    "version": "v1",
+    "proxies":[],
+    "threads": 1,
+    "timeout":[1000,2500],
+    "starts": [
+        "https://localhost:4321/test1/"
+    ],
+    "contentselectors":[
+        ".woocommerce-loop-product__title",
+        ".sml-price-wrap .price ins",
+        ".woocommerce-Tabs-panel--description p"
+    ],
+    "parsetree": [ 
+        {"strategy": "n", 
+         "nextnodes": [1], 
+         "selectors": [".categorylist"]},
+        {"strategy": "p", 
+         "nextnodes": [2], 
+         "selectors": [".next"],
+         "contents": [".product", 0, 1]
+        },{"strategy": "n", 
+         "nextnodes": [3], 
+         "selectors": [".woocommerce-loop-product__link"]},
+        {"strategy": "c",
+         "contents": ["", 2] 
+        }
+    ]
+}

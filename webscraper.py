@@ -1,151 +1,195 @@
+class Page:
+    def __init__(self, u, c, p, d):
+        self.url       = u
+        self.childs    = c
+        self.parent    = p
+        self.depth     = d
+        self.opened    = False
+    def __str__(self):
+        result  = self.url + '\n'
+        result += "parent: "    + str(self.parent)    + "\n"
+        result += "childs: "    + str(self.childs)    + "\n"
+        result += "node: "      + str(self.depth)     + "\n"
+        result += "opened: "    + str(self.opened)    + "\n"
+        result += "-----------" + "\n"
+        return result
+    def isLeaf(self):
+        if not self.childs:
+            return True
+        if len(self.childs) == 0:
+            return True
+        return False
+#-------------------------------------
 class Scraper:  
     #constructor
     def __init__(self, config):
-        self.proxies = config["proxies"]
-        self.threads = config["threads"]
-        self.timeout = config["timeout"]
-        self.parsetree = config["parsetree"]
-        
-        self.urlpool = []
-        for i in range(0,len(self.parsetree)+1):
-            self.urlpool.append([])
-        
-        self.urlpool[0] = config["starts"]
-
-        self.contentselectors = config["contentselectors"]
-        self.results = []
-        for i in range(0, len(self.contentselectors)):
-            self.results.append([])
+        # list of proxy servers ips
+        self.proxies    = config["proxies"]
+        #number of threads
+        self.threads    = 1 
+        #timeout interval min-max to wait
+        self.timeout    = config["timeout"]
+        #list of urls to start in first node
+        self.starturl   = config["start"]
+        #tree structure to store scraping logic
+        self.parsetree  = config["parsetree"]
+        #all selectors to be used during scraping
+        self.contents   = config["contentselectors"]
+        #table with results
+        self.results    = []
+        #number of rows in results csv table
+        self.resultsnum = 0
+        #table with links x node reference
+        self.pages      = []
+        #dictionary of added URLs
+        self.opened     = {}
+        #constant for generation number of previous levels
+        self.c          = 2
     #-----------------------------------
-    def getlinks(self, selector, html):
+    def getHtml(self, driver, url):
+        from random import randint
+
+        #set delay to slow down downloading
+        driver.implicitly_wait(randint(self.timeout[0], self.timeout[1])/1000)
+        
+        #download url through http not https
+        driver.get(url.replace("https://", "http://"))
+        
+        return driver.page_source.encode('utf8')
+    #-----------------------------------
+    def concattags(self, tags):
+        result = ""
+        for tag in tags:
+            result += tag.get_text() + " "
+        return result
+    #-----------------------------------
+    def getlinks(self, html, selector):
         from bs4 import BeautifulSoup
         import html5lib
         
         soup = BeautifulSoup(html, "html5lib")
         
         links = []
+        
         #use selector
         divs = soup.select(selector)
-        
+
         #find all links from div
         for div in divs:
             aas = div.findAll('a')
-            if len(div)==1:
-                href = div['href']
-                if href not in links:
-                    links.append(href)
-
+        
             for a in aas:
                 href = a['href']
                 if href not in links:
                     links.append(href)
         return links
     #-----------------------------------
-    def nextstrategy(self, selector, driver, level):
-        from random import randint
-
-        for url in self.urlpool[level]:
-            #set delay to slow down downloading
-            driver.implicitly_wait(randint(self.timeout[0], self.timeout[1])/1000)
-
-            #download url through http not https
-            driver.get(url.replace("https://", "http://"))
-            print("downloaded url: ", url)
-            
-            #parse to get next level links and add it to pool
-            self.urlpool[level+1] += self.getlinks(selector,driver.page_source.encode('utf8'))
-    #-----------------------------------
-    def downloadcontent(self, selectors, driver, level):
-        from random import randint
+    def parsecontent(self, html, selectors):
         from bs4 import BeautifulSoup
+        
+        #parse html with BS
+        soup = BeautifulSoup(html, "html5lib")
+        
+        for selectorid in selectors[1:]:
+            tags = soup.select(self.contents[selectorid])
 
-        for url in self.urlpool[level]:
-            #set delay to slow down downloading
-            driver.implicitly_wait(randint(self.timeout[0], self.timeout[1])/1000)
-            
-            #try to download actual URL
-            #download url through http not https
-            driver.get(url.replace("https://", "http://"))
-            print("downloaded url: ", url)
-            
-            soup = BeautifulSoup(driver.page_source.encode('utf8'), "html5lib")
-            for i in range(0, len(selectors)):
-                divs = soup.select(selectors[i])
-                for div in divs:
-                    self.results[i].append(div.getText())
-    #-----------------------------------
-    def paggingstrategy(self, selector, driver, level):
+            #add to results file in form of pair col number and string
+            self.results.append((selectorid, self.resultsnum, self.concattags(tags)))
+        self.resultsnum += 1
+    #-------------------------------------
+    def getnumberofbacks(self, page):
+        from random import randint
+        import math
+        
+        maxlvl = self.c**page.depth
+        temp = randint(1,maxlvl)
+        print(temp)
+        temp = math.log(temp, self.c)
+        temp = round(maxlvl - temp)
+        return temp
+    #-------------------------------------
+    def runThread(self, driver, idx):            
         from random import randint
 
-        for nextlink in self.urlpool[level]:
-            while nextlink:
-                #add found link to next level bucket for next processing
-                self.urlpool[level+1].append(nextlink)
+        page = self.pages[idx]
+        node = self.parsetree[page.depth]
+        html = self.getHtml(driver, page.url)
+        
+        print(page.url)
+        
+        #harvest data if not yet harvested
+        if not self.opened[page.url]:
+            print("otvaram url")
+            if "contents" in node:
+                self.parsecontent(html, node["contents"])
+            
+            if node["strategy"] != "c":
+                links = self.getlinks(html, node["selector"])
                 
-                #set delay to slow down downloading
-                driver.implicitly_wait(randint(self.timeout[0], self.timeout[1])/1000)
-
-                #try to download actual URL
-                #download url through http not https
-                driver.get(nextlink.replace("https://", "http://"))
-                print("downloaded url: ", nextlink)
-                
-                #parse next page
-                temp = self.getlinks(selector,driver.page_source.encode('utf8'))
-                if temp:
-                    nextlink = temp[0]
-                else:
-                    break
-                
+                for link in links:
+                    if not link in self.opened:
+                        if node["strategy"] == "n":
+                            self.pages.append(Page(link, [], idx, page.depth + 1))
+                            self.pages[idx].childs.append(len(self.pages) - 1)
+                        if node["strategy"] == "p":
+                            self.pages.append(Page(link, [], idx, page.depth))
+                            self.pages[page.parent].childs.append(len(self.pages) - 1)
+                        
+                        self.opened[link] = False
+            self.opened[page.url] = True
+        
+        if self.opened[page.url]:
+            if page.isLeaf():
+                self.pages[page.parent].childs.remove(idx)
+                numofbacks = self.getnumberofbacks(page)
+                print("skacem o: " + str(numofbacks))
+                if numofbacks == 0:
+                    return None
+                for i in range(numofbacks):
+                    nextid = page.parent
+                    if not nextid:
+                        return None
+                    page = self.pages[nextid]
+                self.runThread(driver, nextid)
+            else:
+                self.runThread(driver, page.childs[randint(0, len(page.childs)-1)])
     #-------------------------------------
-    def createThread(self, mode, selectors, level):
+    def createThread(self):
         import virtualbrowser
         
-        proxy = self.proxies.pop()
-        try: 
-            driver = virtualbrowser.createChromeMachine(proxy)
-            if mode=='p':
-                self.paggingstrategy(selectors, driver, level)
-            if mode=='n':
-                self.nextstrategy(selectors, driver, level)
-            if mode=='c':
-                self.downloadcontent(selectors, driver, level)
-        except Exception as e:
-                print(e)
-                print("blocked: " + proxy)
-                
-                driver.quit()
-                
-                proxy = self.proxies.pop()
-                if not proxy:
-                    print("we ran out of proxies")
-    #-----------------------------------
-    def createThreadExp(self, mode, selectors, level):
-        import virtualbrowser
-        
+        #create headless browser
         driver = virtualbrowser.createChromeMachine("127.0.0.1")
-        if mode=='p':
-            self.paggingstrategy(selectors, driver, level)
-        if mode=='n':
-            self.nextstrategy(selectors, driver, level)
-        if mode=='c':
-            self.downloadcontent(selectors, driver, level)
+        
+        #start tree
+        self.runThread(driver, 0)
+        
         driver.quit()
     #-----------------------------------
     #start the scraping process
-    #TODO
-    #pagination with ajax
-    #nextstrategy with popups
-    #pagination with loadmore
-    #loading more while scrolling
-
     def start(self):
-        #harvest links to be scraped with config json logic
-        for i in range(0,len(self.parsetree)):
-            self.createThreadExp(self.parsetree[i][0], self.parsetree[i][1], i)
-
-        #download content with
-        self.createThreadExp('c', self.contentselectors, len(self.parsetree))
-
-        return self.results
-#-------------------------------------------------
+        #erase previous values of results
+        self.results = []
+        self.pages   = []
+        
+        #set first set of urls from config file as starts
+        self.pages.append(Page(self.starturl, [], None, 0))
+        self.opened[self.starturl] = False
+        
+        self.createThread()
+    #-------------------------------------------------
+    #convert sparse table to csv table
+    def getResults(self):
+        output = []
+        for i in range(self.resultsnum):
+            output.append([""] * len(self.contents))
+        
+        for elem in self.results:
+            output[elem[1]][elem[0]] = elem[2]
+        
+        #replacing every ";"" with ","" because of unexpected delimiters in csv file
+        for i in range(0,len(output)):
+            for j in range(0,len(output[i])):
+                output[i][j] = output[i][j].replace(";", ",")
+        
+        return output
+    #-------------------------------------------------

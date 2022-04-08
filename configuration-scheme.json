@@ -1,0 +1,75 @@
+{
+  "title": "Scraper configuration",
+  "description": "Contains configuration data and scraping tree logic for Webscraper",
+  "required": [ "version", "start", "contentselectors", "parsetree"],
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Define version of scraping language",
+      "enum": ["v1"]
+    },
+    "proxies": {
+       "description": "List of proxy ip adresses in 127.0.0.1:4321 format",
+       "type": "array",
+       "items": {
+         "type": "string",
+         "pattern": "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:[0-9]{1,5}$"
+       }
+    },
+    "threads": {
+      "description": "Maximum number of threads working",
+      "type": "integer",
+      "minimum": 0
+    },
+    "timeout": {
+      "description": "Array with minimum and maximum values of delay between downloading webpages in ms",
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "start": {
+      "description": "first page",
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "contentselectors": {
+      "description": "List of chained css selectors of content to be scraped",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }, 
+    "parsetree": {
+      "description": "Definition of nodes of parsing logic",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["strategy"],
+        "properties": {
+          "strategy": {
+            "description": "Chooses which strategy is used for finding next links set, if empty it is leaf",
+            "type": "string",
+            "enum": ["n", "p", "c"]
+          },
+          "selector": {
+            "description": "css selector to find next link in html code. if missing not jumping",
+            "type": "string"
+          },
+          "contents": {
+            "description": "Index of css selectors to extract content in node urls pool",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}

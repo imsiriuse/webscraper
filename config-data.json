@@ -1,16 +1,22 @@
 {
+    "version": "v1",
     "proxies":[],
-    "threads": 3,
+    "threads": 1,
     "timeout":[1000,2500],
-    "starts": ["http://localhost:4321/test1/"],
-    "parsetree": [
-        ["n", ".categorylist"],
-        ["p", ".next"],
-        ["n", ".woocommerce-loop-product__link"]
-    ],
-    "contentselectors": [
+    "start": "https://localhost:4321/test1/",
+    "contentselectors":[
         ".page-title",
-        ".summary .woocommerce-Price-amount",
+        ".summary .woocommerce-Price-amount bdi",
         ".woocommerce-Tabs-panel--description p"
+    ],
+    "parsetree": [ 
+        {"strategy": "n",
+         "selector": ".categorylist"},
+        {"strategy": "p", 
+         "selector": ".page-numbers"},
+        {"strategy": "n", 
+         "selector": ".woocommerce-loop-product__link"},
+        {"strategy": "c",
+         "contents": [0, 1, 2]}
     ]
 }
