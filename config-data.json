@@ -4,6 +4,7 @@
     "threads": 1,
     "timeout":[1000,2500],
     "start": "https://localhost:4321/test1/",
+    "c": 2,
     "contentselectors":[
         ".page-title",
         ".summary .woocommerce-Price-amount bdi",

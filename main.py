@@ -1,22 +1,13 @@
 import webscraper
-import json
-#import proxdownload
-#import csv
-import validatejson
+import config
 
 if __name__ == '__main__':
-    # loading config file
-    with open('config-data.json', 'r') as json_file:
-        config = json.load(json_file)
-        json_file.close()
-
-    validatejson.configvalidation(config)
 
     # get list of ip adresses of proxy servers
     # config["proxies"] = proxdownload.getList()
 
     # start of scraping process
-    scraper = webscraper.Scraper(config)
+    scraper = webscraper.Scraper(config.CONFIG)
     scraper.start()
     #results = scraper.getResults()
 
