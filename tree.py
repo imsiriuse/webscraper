@@ -28,7 +28,7 @@ class Tree:
         if "contents" in parser:
             result = webparsing.getcontent(html, parser["contents"], config.CONFIG["contentselectors"])
 
-        nextlinks = None
+        nextlinks = []
         if "nextselector" in parser:
             nextlinks = webparsing.getlinks(html, parser["nextselector"])
 
@@ -38,7 +38,7 @@ class Tree:
                 self.current.addchild(newpage)
                 self.data[link] = newpage
 
-        pagelinks = None
+        pagelinks = []
         if "pageselector" in parser:
             pagelinks = webparsing.getlinks(html, parser["pagelinks"])
 
