@@ -5,11 +5,12 @@ class Page:
         self.parent    = parent
         self.parserid  = parserid
         self.opened    = False
-
+    def __repr__(self):
+        return self.url
     def __str__(self):
         result  = self.url + '\n'
-        result += "parent: "    + str(self.parent)    + "\n"
-        result += "childs: "    + str(self.childs)    + "\n"
+        result += "parent: "    + str( "None" if not self.parent else self.parent.url)    + "\n"
+        result += "childs: "    + str([child.url for child in self.childs])    + "\n"
         result += "parserid: "  + str(self.parserid)  + "\n"
         result += "opened: "    + str(self.opened)    + "\n"
         result += "-----------" + "\n"

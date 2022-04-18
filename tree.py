@@ -2,7 +2,7 @@ import page
 import math
 import config
 import webparsing
-from random import randint
+from random import randint, random
 
 
 class Tree:
@@ -10,6 +10,7 @@ class Tree:
         self.root = page.Page(url=starturl, parent=None, parserid=0)
         self.data = {self.root.url: self.root}
         self.current = self.root
+        self.sliz = [self.current]
 
     def getcurrent(self):
         return self.current
@@ -35,9 +36,9 @@ class Tree:
                 if not link in self.data:
                     newpage = None
                     if parser["strategy"] == "n":
-                        newpage = page.Page(link, page, self.current.parserid + 1)
+                        newpage = page.Page(link, self.current, self.current.parserid + 1)
                     if parser["strategy"] == "p":
-                        newpage = page.Page(link, page, self.current.parserid)
+                        newpage = page.Page(link, self.current, self.current.parserid)
                     self.current.addchild(newpage)
                     self.data[link] = newpage
         self.current.opened = True
@@ -56,27 +57,25 @@ class Tree:
 
     def getnumberofbacks(self):
         # generate random number of back clicks
-        depth = self.getdepth(self.current)
-        maxlvl = config.CONFIG["c"] ** depth
-        val = randint(1, maxlvl)
-        val = math.log(val, config.CONFIG["c"])
-        val = round(maxlvl - val)
-        return val
+        if len(self.sliz) == 1:
+            return 0
+        return randint(1,randint(1,len(self.sliz)-1))
 
     def deletecurrent(self):
         if not self.current.parent:
             return None
-        parent = self.data[self.current.url].parent
-        parent.childs.remove(self.current)
-        self.current = parent
+        self.current.parent.childs.remove(self.current)
 
     def iscurrentopen(self):
         return self.current.opened
 
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
+        print(numberofbacks)
         for i in range(numberofbacks):
+            print(self.sliz)
             driver.back()
+            self.sliz.pop();
             self.current = self.current.parent
 
     def iscurrentleaf(self):
@@ -84,3 +83,4 @@ class Tree:
 
     def gonext(self):
         self.current = self.current.childs[randint(0, len(self.current.childs) - 1)]
+        self.sliz.append(self.current)
