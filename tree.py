@@ -40,11 +40,11 @@ class Tree:
 
         pagelinks = []
         if "pageselector" in parser:
-            pagelinks = webparsing.getlinks(html, parser["pagelinks"])
+            pagelinks = webparsing.getlinks(html, parser["pageselector"])
 
         for link in pagelinks:
             if link not in self.data:
-                newpage = page.Page(link, self.current, self.current.parserid)
+                newpage = page.Page(link, self.current.parent, self.current.parserid)
                 self.current.parent.addchild(newpage)
                 self.data[link] = newpage
 

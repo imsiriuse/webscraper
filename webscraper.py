@@ -12,20 +12,22 @@ class Scraper:
 
     def runthread(self, driver):
         print(self.tree.getcurrent())
-        if not self.tree.iscurrentopen():
-            results = self.tree.opencurrent(driver)
-            if results:
-                self.results.append(results)
-            self.runthread(driver)
+        while(True):
+            if not self.tree.iscurrentopen():
+                results = self.tree.opencurrent(driver)
+                if results:
+                    self.results.append(results)
 
-        if self.tree.iscurrentopen():
-            print(self.tree.iscurrentleaf())
-            if self.tree.iscurrentleaf():
-                self.tree.deletecurrent()
-                self.tree.gorandomback(driver)
-            else:
-                self.tree.gonext()
-            self.runthread(driver)
+            if self.tree.iscurrentopen():
+                print(self.tree.iscurrentleaf())
+                if self.tree.iscurrentleaf():
+                    self.tree.deletecurrent()
+                    self.tree.gorandomback(driver)
+                else:
+                    self.tree.gonext()
+            
+            if len(self.tree.root.childs) == 0:
+                break
 
     def createthread(self):
         # create headless browser
