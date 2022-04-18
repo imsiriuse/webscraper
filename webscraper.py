@@ -11,12 +11,15 @@ class Scraper:
         self.tree = None
 
     def runthread(self, driver):
-        #print(self.tree.getcurrent())
+        print(self.tree.getcurrent())
         if not self.tree.iscurrentopen():
             results = self.tree.opencurrent(driver)
             if results:
                 self.results.append(results)
+            self.runthread(driver)
+
         if self.tree.iscurrentopen():
+            print(self.tree.iscurrentleaf())
             if self.tree.iscurrentleaf():
                 self.tree.deletecurrent()
                 self.tree.gorandomback(driver)

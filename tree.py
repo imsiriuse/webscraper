@@ -33,7 +33,7 @@ class Tree:
             links = webparsing.getlinks(html, parser["selector"])
 
             for link in links:
-                if not link in self.data:
+                if link not in self.data:
                     newpage = None
                     if parser["strategy"] == "n":
                         newpage = page.Page(link, self.current, self.current.parserid + 1)
@@ -71,16 +71,17 @@ class Tree:
 
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
-        print(numberofbacks)
+
         for i in range(numberofbacks):
             print(self.sliz)
             driver.back()
-            self.sliz.pop();
+            self.sliz.pop()
             self.current = self.current.parent
 
     def iscurrentleaf(self):
         return self.current.isleaf()
 
     def gonext(self):
-        self.current = self.current.childs[randint(0, len(self.current.childs) - 1)]
+        self.current = self.current.childs[randint(0, len(self.current.childs)-1)]
+
         self.sliz.append(self.current)
