@@ -50,18 +50,16 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["strategy"],
         "properties": {
-          "strategy": {
-            "description": "Chooses which strategy is used for finding next links set, if empty it is leaf",
-            "type": "string",
-            "enum": ["n", "p", "c"]
-          },
-          "selector": {
+          "nextselector": {
             "description": "css selector to find next link in html code. if missing not jumping",
             "type": "string"
           },
-          "contents": {
+          "pageselector": {
+            "description": "css selector to find next link in html code. if missing not jumping",
+            "type": "string"
+          },
+          "contselector": {
             "description": "Index of css selectors to extract content in node urls pool",
             "type": "array",
             "items": {

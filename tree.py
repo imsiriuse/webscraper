@@ -28,19 +28,26 @@ class Tree:
         if "contents" in parser:
             result = webparsing.getcontent(html, parser["contents"], config.CONFIG["contentselectors"])
 
-        links = None
-        if parser["strategy"] != "c":
-            links = webparsing.getlinks(html, parser["selector"])
+        nextlinks = None
+        if "nextselector" in parser:
+            nextlinks = webparsing.getlinks(html, parser["nextselector"])
 
-            for link in links:
-                if link not in self.data:
-                    newpage = None
-                    if parser["strategy"] == "n":
-                        newpage = page.Page(link, self.current, self.current.parserid + 1)
-                    if parser["strategy"] == "p":
-                        newpage = page.Page(link, self.current, self.current.parserid)
-                    self.current.addchild(newpage)
-                    self.data[link] = newpage
+        for link in nextlinks:
+            if link not in self.data:
+                newpage = page.Page(link, self.current, self.current.parserid + 1)
+                self.current.addchild(newpage)
+                self.data[link] = newpage
+
+        pagelinks = None
+        if "pageselector" in parser:
+            pagelinks = webparsing.getlinks(html, parser["pagelinks"])
+
+        for link in pagelinks:
+            if link not in self.data:
+                newpage = page.Page(link, self.current, self.current.parserid)
+                self.current.parent.addchild(newpage)
+                self.data[link] = newpage
+
         self.current.opened = True
 
         return result

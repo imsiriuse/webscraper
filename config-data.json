@@ -11,13 +11,9 @@
         ".woocommerce-Tabs-panel--description p"
     ],
     "parsetree": [ 
-        {"strategy": "n",
-         "selector": ".categorylist"},
-        {"strategy": "p", 
-         "selector": ".page-numbers"},
-        {"strategy": "n", 
-         "selector": ".woocommerce-loop-product__link"},
-        {"strategy": "c",
-         "contents": [0, 1, 2]}
+        {"nextselector": ".categorylist"},
+        {"pageselector": ".page-numbers",
+         "nextselector": ".woocommerce-loop-product__link"},
+        {"contselector": [0, 1, 2]}
     ]
 }

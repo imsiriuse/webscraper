@@ -1,0 +1,6 @@
+starting at http://localhost:4321/test1/
+go to http://localhost:4321/test1/product-category/core-neo/
+getlinks for pagination
+foreach pagination link create page and add to siblings
+getlinks for next
+foreach next create page and add to childs
