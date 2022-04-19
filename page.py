@@ -1,26 +1,31 @@
 class Page:
     def __init__(self, url, parent, parserid):
-        self.url       = url
-        self.childs    = []
-        self.parent    = parent
-        self.parserid  = parserid
-        self.opened    = False
+        self.url = url
+        self.childs = []
+        self.parent = parent
+        self.parserid = parserid
+        self.opened = False
+
     def __repr__(self):
         return self.url
-    #def __str__(self):
-    #    result  = self.url + '\n'
-    #    result += "parent: "    + str( "None" if not self.parent else self.parent.url)    + "\n"
-    #    result += "childs: "    + str([child.url for child in self.childs])    + "\n"
-    #    result += "parserid: "  + str(self.parserid)  + "\n"
-    #    result += "opened: "    + str(self.opened)    + "\n"
-    #    result += "-----------" + "\n"
-    #    return result
 
     def __str__(self):
         result = self.url + '\n'
-        for child in self.childs:
-            result += " - " + child.url + "\n"
+        # for child in self.childs:
+        #    result += " - " + child.url + "\n"
         return result
+
+    def printtree(self, level=0):
+        ret = " - "*level + self.url + " - id:" + str(self.parserid) + "\n"
+        for child in self.childs:
+            ret += child.printtree(level+1)
+        return ret
+
+    def havechild(self, child):
+        if not child:
+            return None
+
+        return child in self.childs
 
     def isleaf(self):
         if len(self.childs) == 0:
@@ -30,3 +35,18 @@ class Page:
     def addchild(self, child):
         if child:
             self.childs.append(child)
+        else:
+            return None
+
+    def removechild(self, child):
+        if child:
+            self.childs.remove(child)
+        else:
+            return None
+
+    def removeself(self):
+        if self.parent:
+            self.parent.removechild(self)
+        else:
+            return None
+

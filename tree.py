@@ -1,8 +1,8 @@
 import page
-import math
 import config
 import webparsing
-from random import randint, random
+import random
+from random import randint
 
 
 class Tree:
@@ -10,7 +10,10 @@ class Tree:
         self.root = page.Page(url=starturl, parent=None, parserid=0)
         self.data = {self.root.url: self.root}
         self.current = self.root
-        self.sliz = [self.current]
+        self.pagestack = [self.current]
+
+    def __str__(self):
+        return self.root.printtree(level = 0)
 
     def getcurrent(self):
         return self.current
@@ -21,7 +24,7 @@ class Tree:
         self.current = node
 
     def opencurrent(self, driver):
-        print("otvaram: " + self.current.url)
+        # print("otvaram: " + self.current.url)
         html = webparsing.gethtml(driver, self.current.url, config.CONFIG["timeout"][0], config.CONFIG["timeout"][1])
         parser = config.CONFIG["parsetree"][self.current.parserid]
 
@@ -45,54 +48,41 @@ class Tree:
 
         for link in pagelinks:
             if link not in self.data:
-                newpage = page.Page(link, self.current.parent, self.current.parserid)
-                self.current.parent.addchild(newpage)
+                newpage = page.Page(link, self.current, self.current.parserid)
+                self.current.addchild(newpage)
                 self.data[link] = newpage
 
         self.current.opened = True
 
         return result
 
-    @staticmethod
-    def getdepth(node):
-        # get depth of node in tree
-        depth = 0
-        parent = node.parent
-        while parent:
-            depth += 1
-            parent = parent.parent
-        return depth
-
     def getnumberofbacks(self):
         # generate random number of back clicks
-        if len(self.sliz) == 1:
+        if len(self.pagestack) == 1:
             return 0
-        return randint(1,randint(1,len(self.sliz)-1))
+        return randint(1, randint(1, len(self.pagestack) - 1))
 
     def deletecurrent(self):
-        print("mazem: " + self.current.url)
-        if not self.current.parent:
-            return None
-        self.current.parent.childs.remove(self.current)
+        self.current.removeself()
 
     def iscurrentopen(self):
         return self.current.opened
 
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
-        print("skacem dozadu o :" + str(numberofbacks))
+        #print("skacem dozadu o :" + str(numberofbacks))
+        #print("som v hlbke: "+ str(len(self.pagestack)))
         for i in range(numberofbacks):
-            self.sliz.pop()
+            self.pagestack.pop()
             self.current = self.current.parent
 
     def iscurrentleaf(self):
         return self.current.isleaf()
 
     def gonext(self):
-        self.current = self.current.childs[randint(0, len(self.current.childs)-1)]
-        print("skacem do: "  + self.current.url)
-
-        self.sliz.append(self.current)
+        # print("skacem do: "  + self.current.url)
+        self.current = random.choice(self.current.childs)
+        self.pagestack.append(self.current)
 
     def alltraversed(self):
         if self.root.opened and len(self.root.childs) == 0:

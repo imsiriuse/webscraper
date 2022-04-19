@@ -12,7 +12,9 @@ class Scraper:
 
     def runthread(self, driver):
         while not self.tree.alltraversed():
+            print(self.tree.getcurrent())
             if not self.tree.iscurrentopen():
+
                 results = self.tree.opencurrent(driver)
                 if results:
                     self.results.append(results)
