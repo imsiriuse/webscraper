@@ -21,6 +21,7 @@ class Tree:
         self.current = node
 
     def opencurrent(self, driver):
+        print("otvaram: " + self.current.url)
         html = webparsing.gethtml(driver, self.current.url, config.CONFIG["timeout"][0], config.CONFIG["timeout"][1])
         parser = config.CONFIG["parsetree"][self.current.parserid]
 
@@ -69,6 +70,7 @@ class Tree:
         return randint(1,randint(1,len(self.sliz)-1))
 
     def deletecurrent(self):
+        print("mazem: " + self.current.url)
         if not self.current.parent:
             return None
         self.current.parent.childs.remove(self.current)
@@ -78,10 +80,8 @@ class Tree:
 
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
-
+        print("skacem dozadu o :" + str(numberofbacks))
         for i in range(numberofbacks):
-            print(self.sliz)
-            driver.back()
             self.sliz.pop()
             self.current = self.current.parent
 
@@ -90,5 +90,11 @@ class Tree:
 
     def gonext(self):
         self.current = self.current.childs[randint(0, len(self.current.childs)-1)]
+        print("skacem do: "  + self.current.url)
 
         self.sliz.append(self.current)
+
+    def alltraversed(self):
+        if self.root.opened and len(self.root.childs) == 0:
+            return True
+        return False

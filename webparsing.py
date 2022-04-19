@@ -1,7 +1,6 @@
 from random import randint
 from bs4 import BeautifulSoup
 
-
 def gethtml(driver, url, timemin, timemax):
     # set delay, to slow down downloading
     driver.implicitly_wait(randint(timemin, timemax) / 1000)
@@ -28,7 +27,13 @@ def getlinks(html, selector):
     # find all links from div
     links = []
     for div in divs:
-        aas = div.findAll('a')
+        if div.name == 'a':
+            href = div['href']
+            if href not in links:
+                links.append(href)
+            continue
+
+        aas = div.find_all('a')
         for a in aas:
             href = a['href']
             if href not in links:
