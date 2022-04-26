@@ -2,7 +2,7 @@
     "version": "v1",
     "proxies":[],
     "threads": 1,
-    "timeout":[1000,2500],
+    "timeout":[3000,5000],
     "start": "https://localhost:4321/test1/",
     "c": 2,
     "contentselectors":[
@@ -10,6 +10,12 @@
         ".summary .woocommerce-Price-amount bdi",
         ".woocommerce-Tabs-panel--description p"
     ],
+    "windowsizes": [
+        "1280,720",
+        "1920,1080",
+        "2560,1440",
+        "2048,1080",
+        "3840,2160"],
     "parsetree": [ 
         {"nextselector": ".categorylist"},
         {"pageselector": ".page-numbers",

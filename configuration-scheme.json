@@ -32,8 +32,19 @@
       "minItems": 2,
       "maxItems": 2
     },
-    "start": {
+    "maxtimeout": {
+      "type": "integer"
+    },
+    "windowsizes": {
       "description": "first page",
+      "type": "array",
+      "items" :{
+        "type": "string",
+        "pattern": "^[0-9]+,[0-9]+$"
+      }
+    },
+    "start": {
+      "description": "array of different sizes of headless browser",
       "type": "string",
       "pattern": "^https?://"
     },

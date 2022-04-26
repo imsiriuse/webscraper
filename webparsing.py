@@ -1,12 +1,9 @@
 from random import randint
 from bs4 import BeautifulSoup
 
-def gethtml(driver, url, timemin, timemax):
+def gethtml(driver, timemin, timemax):
     # set delay, to slow down downloading
     driver.implicitly_wait(randint(timemin, timemax) / 1000)
-
-    # download url through http not https
-    driver.get(url.replace("https://", "http://"))
 
     # return html code of webpage in utf8
     return driver.page_source.encode('utf8')

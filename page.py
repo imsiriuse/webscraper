@@ -11,8 +11,6 @@ class Page:
 
     def __str__(self):
         result = self.url + '\n'
-        # for child in self.childs:
-        #    result += " - " + child.url + "\n"
         return result
 
     def printtree(self, level=0):

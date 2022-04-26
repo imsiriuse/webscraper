@@ -1,3 +1,4 @@
+import random
 import virtualbrowser
 import config
 import tree
@@ -11,8 +12,12 @@ class Scraper:
         self.tree = None
 
     def runthread(self, driver):
+        # download url through http not https
+        driver.get(self.tree.root.url.replace("https://", "http://"))
+
         while not self.tree.alltraversed():
             print(self.tree.getcurrent())
+
             if not self.tree.iscurrentopen():
 
                 results = self.tree.opencurrent(driver)
@@ -24,17 +29,28 @@ class Scraper:
                     self.tree.deletecurrent()
                     self.tree.gorandomback(driver)
                 else:
-                    self.tree.gonext()
+                    self.tree.gonext(driver)
 
     def createthread(self):
         # create headless browser
-        driver = virtualbrowser.createChromeMachine("127.0.0.1")
+
+        if "windowsizes" in config.CONFIG:
+            size = random.choice(config.CONFIG["windowsizes"])
+        else:
+            size = "1920,1080"
+
+        driver = virtualbrowser.createChromeMachine(windowsize = size)
         # set tree to root
         self.tree.current = self.tree.root
         # start thread
-        self.runthread(driver)
-        # closing headless browser
-        driver.quit()
+        #try:
+        #    self.runthread(driver)
+        #except:
+        #   traceback.print_exc()
+        #finally:
+        #   driver.close()
+
+        virtualbrowser.test(driver)
 
     def start(self):
         # erase previous values of results
