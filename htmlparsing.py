@@ -1,13 +1,7 @@
-from random import randint
+# module works now only with
+# html code and nothing more
+
 from bs4 import BeautifulSoup
-
-def gethtml(driver, timemin, timemax):
-    # set delay, to slow down downloading
-    driver.implicitly_wait(randint(timemin, timemax) / 1000)
-
-    # return html code of webpage in utf8
-    return driver.page_source.encode('utf8')
-
 
 def concattags(tags):
     result = ""
@@ -49,3 +43,6 @@ def getcontent(html, contentids, contents):
         # add to result file in form of pair col number and string
         result.append((selectorid, concattags(tags)))
     return result
+
+def getrandomlink(html, domain):
+    pass

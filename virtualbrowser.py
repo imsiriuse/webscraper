@@ -4,6 +4,8 @@ from fake_useragent import UserAgent
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.common.exceptions import TimeoutException
 import traceback
 
 def createChromeMachine(proxy="127.0.0.1", windowsize="1920,1080"):
@@ -14,17 +16,37 @@ def createChromeMachine(proxy="127.0.0.1", windowsize="1920,1080"):
     # chrome_options.add_argument("--proxy-server=" + proxy)
 
     # optimization settings
-    prefs = {'profile.default_content_setting_values': {'cookies': 2, 'images': 2, 'javascript': 2, 'plugins': 2,
-                                                        'popups': 2, 'geolocation': 2, 'notifications': 2,
-                                                        'auto_select_certificate': 2, 'fullscreen': 2, 'mouselock': 2,
-                                                        'mixed_script': 2, 'media_stream': 2, 'media_stream_mic': 2,
-                                                        'media_stream_camera': 2, 'protocol_handlers': 2,
-                                                        'ppapi_broker': 2, 'automatic_downloads': 2, 'midi_sysex': 2,
-                                                        'push_messaging': 2, 'ssl_cert_decisions': 2,
-                                                        'metro_switch_to_desktop': 2, 'protected_media_identifier': 2,
-                                                        'app_banner': 2, 'site_engagement': 2, 'durable_storage': 2}}
+    prefs = {
+        'profile.default_content_setting_values': {
+        'cookies': 2,
+        'images': 2,
+        'plugins': 2,
+        'popups': 2,
+        'geolocation': 2,
+        'notifications': 2,
+        'auto_select_certificate': 2,
+        'fullscreen': 2,
+        'mouselock': 2,
+        'mixed_script': 2,
+        'media_stream': 2,
+        'media_stream_mic': 2,
+        'media_stream_camera': 2,
+        'protocol_handlers': 2,
+        'ppapi_broker': 2,
+        'automatic_downloads': 2,
+        'midi_sysex': 2,
+        'push_messaging': 2,
+        'ssl_cert_decisions': 2,
+        'metro_switch_to_desktop': 2,
+        'protected_media_identifier': 2,
+        'app_banner': 2,
+        'site_engagement': 2,
+        'durable_storage': 2,
+        'stylesheets':2
+        }
+    }
 
-    #chrome_options.add_experimental_option('prefs', prefs)
+    chrome_options.add_experimental_option('prefs', prefs)
 
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-gpu")
@@ -50,7 +72,7 @@ def createChromeMachine(proxy="127.0.0.1", windowsize="1920,1080"):
 def test(driver):
     try:
         driver.get("http://localhost:4321/test1/")
-        loadnewpage(driver, "http://localhost:4321/test1/product-category/core-neo/")
+        clickonlink(driver, "http://localhost:4321/test1/product-category/core-neo/")
 
         print(driver.current_url)
     except:
@@ -59,18 +81,26 @@ def test(driver):
         driver.quit()
 
 
-def loadnewpage(driver, url):
+def clickonlink(driver, url):
     # physically click on the link in browser
     actions = ActionChains(driver)
 
-    elements = WebDriverWait(driver, 10).until(lambda x: x.find_elements(By.CSS_SELECTOR, 'a[href="' + url + '"]'))
+    #wait max 5 second for element to be loaded
+    try:
+        WebDriverWait(driver, 5).until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, 'a[href="' + url + '"]')))
+    except TimeoutException:
+        print("Element can't be located")
+        return None
 
+    elements = driver.find_elements(By.CSS_SELECTOR, 'a[href="' + url + '"]')
+
+    #pick up that element which is visible
     for element in elements:
-        #check if element is visible
         if element.is_displayed():
             actions.move_to_element(element)
             actions.click(element)
             actions.perform()
-            break
+            return True
 
+    return None
 

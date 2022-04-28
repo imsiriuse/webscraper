@@ -1,7 +1,7 @@
 import page
 import config
 import virtualbrowser
-import webparsing
+import htmlparsing
 import random
 from random import randint
 
@@ -23,19 +23,28 @@ class Tree:
             return None
         self.current = node
 
+    def gethtml(driver, timemin, timemax):
+        # set delay, to slow down downloading
+        timeout = randint(timemin, timemax) / 1000
+
+        driver.implicitly_wait(timeout)
+
+        # return html code of webpage in utf8
+        return driver.page_source.encode('utf8')
+
     def opencurrent(self, driver):
         # print("otvaram: " + self.current.url)
-        html = webparsing.gethtml(driver, config.CONFIG["timeout"][0], config.CONFIG["timeout"][1])
+        html = self.gethtml(driver, config.CONFIG["timeout"][0], config.CONFIG["timeout"][1])
 
         parser = config.CONFIG["parsetree"][self.current.parserid]
 
         result = None
         if "contents" in parser:
-            result = webparsing.getcontent(html, parser["contents"], config.CONFIG["contentselectors"])
+            result = htmlparsing.getcontent(html, parser["contents"], config.CONFIG["contentselectors"])
 
         nextlinks = []
         if "nextselector" in parser:
-            nextlinks = webparsing.getlinks(html, parser["nextselector"])
+            nextlinks = htmlparsing.getlinks(html, parser["nextselector"])
 
         for link in nextlinks:
             if link not in self.data:
@@ -45,7 +54,7 @@ class Tree:
 
         pagelinks = []
         if "pageselector" in parser:
-            pagelinks = webparsing.getlinks(html, parser["pageselector"])
+            pagelinks = htmlparsing.getlinks(html, parser["pageselector"])
 
         for link in pagelinks:
             if link not in self.data:
@@ -86,7 +95,7 @@ class Tree:
         self.current = random.choice(self.current.childs)
         self.pagestack.append(self.current)
 
-        virtualbrowser.loadnewpage(driver, self.current.url)
+        virtualbrowser.clickonlink(driver, self.current.url)
 
 
     def alltraversed(self):
