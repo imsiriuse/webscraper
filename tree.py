@@ -1,6 +1,6 @@
 import page
 import config
-import virtualbrowser
+import machine
 import htmlparsing
 import random
 from random import randint
@@ -27,7 +27,7 @@ class Tree:
         # set delay, to slow down downloading
         timeout = randint(timemin, timemax) / 1000
 
-        driver.implicitly_wait(timeout)
+        driver.wait(timeout)
 
         # return html code of webpage in utf8
         return driver.page_source.encode('utf8')

@@ -4,7 +4,6 @@
     "threads": 1,
     "timeout":[3000,5000],
     "start": "https://localhost:4321/test1/",
-    "c": 2,
     "contentselectors":[
         ".page-title",
         ".summary .woocommerce-Price-amount bdi",
@@ -16,6 +15,7 @@
         "2560,1440",
         "2048,1080",
         "3840,2160"],
+    "driver": "firefox",
     "parsetree": [ 
         {"nextselector": ".categorylist"},
         {"pageselector": ".page-numbers",

@@ -1,8 +1,8 @@
 import random
-import virtualbrowser
 import config
 import tree
-
+from firefoxmachine import FirefoxMachine
+from chromemachine import ChromeMachine
 
 class Scraper:
     def __init__(self):
@@ -33,24 +33,20 @@ class Scraper:
 
     def createthread(self):
         # create headless browser
+        if config.CONFIG["driver"] == "firefox":
+            machine = FirefoxMachine(windowsize=random.choice(config.CONFIG["windowsizes"]))
 
-        if "windowsizes" in config.CONFIG:
-            size = random.choice(config.CONFIG["windowsizes"])
-        else:
-            size = "1920,1080"
+        if config.CONFIG["driver"] == "chrome":
+            machine = ChromeMachine(windowsize=random.choice(config.CONFIG["windowsizes"]))
 
-        driver = virtualbrowser.createChromeMachine(windowsize = size)
         # set tree to root
         self.tree.current = self.tree.root
-        # start thread
-        #try:
-        #    self.runthread(driver)
-        #except:
-        #   traceback.print_exc()
-        #finally:
-        #   driver.close()
 
-        virtualbrowser.test(driver)
+        # start thread
+        # try self.runthread(driver) except traceback.print_exc() finally driver.close()
+
+        # testing
+        machine.clicklink("http://localhost:4321/test1/product-category/core-neo/")
 
     def start(self):
         # erase previous values of results
@@ -61,6 +57,10 @@ class Scraper:
 
         # start thread
         self.createthread()
+
+        # TESTING
+        # testing page url http://localhost:4321/test1/testing-page/
+
 
     @staticmethod
     def removeseparators(output):
