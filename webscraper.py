@@ -46,6 +46,7 @@ class Scraper:
         # try self.runthread(driver) except traceback.print_exc() finally driver.close()
 
         # testing
+
         machine.clicklink("http://localhost:4321/test1/product-category/core-neo/")
 
     def start(self):
