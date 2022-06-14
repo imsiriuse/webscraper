@@ -1,11 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -15,8 +10,7 @@ from machine import Machine
 class ChromeMachine(Machine):
 
     def __init__(self, proxy="127.0.0.1", windowsize="2048,1080"):
-        self.proxy = proxy
-        self.windowsize = windowsize
+        super().__init__(proxy, windowsize)
 
         chrome_options = Options()
 
@@ -63,7 +57,7 @@ class ChromeMachine(Machine):
         chrome_options.add_argument("--log-level=3")
 
         # to be run as headless (do not open window)
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
 
         # set size of browser window
         chrome_options.add_argument("--window-size=" + windowsize)
@@ -73,48 +67,3 @@ class ChromeMachine(Machine):
 
         # creating instance of chrome browser
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-
-    def disablecss(self):
-        pass
-
-    def showelement(self, firstelement):
-        action = ActionChains(self.driver)
-
-        element = firstelement
-        while element:
-            element = element.find_element(by=By.XPATH, value="..")
-            if element.is_displayed():
-                action.move_to_element(element).click().perform()
-
-                if firstelement.is_displayed():
-                    return True
-        return False
-
-    def clicklink(self, url):
-        # physically click on the link in browser
-        actions = ActionChains(self.driver)
-
-        # wait max 5 second for element to be loaded
-        try:
-            WebDriverWait(self.driver, 5).until(
-                expected_conditions.presence_of_element_located((By.CSS_SELECTOR, 'a[href="' + url + '"]')))
-        except TimeoutException:
-            print("Element can't be located")
-            return None
-
-        elements = self.driver.find_elements(By.CSS_SELECTOR, 'a[href="' + url + '"]')
-
-        # pick up that element which is visible
-        for element in elements:
-            if not element.is_displayed():
-                # try to make element visible
-                if self.showelement(element):
-                    actions.move_to_element(element).click().perform()
-                    return True
-            else:
-                actions.move_to_element(element).click().perform()
-                return True
-
-        return None
-
-

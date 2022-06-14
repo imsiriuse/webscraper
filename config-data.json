@@ -9,12 +9,7 @@
         ".summary .woocommerce-Price-amount bdi",
         ".woocommerce-Tabs-panel--description p"
     ],
-    "windowsizes": [
-        "1280,720",
-        "1920,1080",
-        "2560,1440",
-        "2048,1080",
-        "3840,2160"],
+    "windowsizes": ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"],
     "driver": "firefox",
     "parsetree": [ 
         {"nextselector": ".categorylist"},

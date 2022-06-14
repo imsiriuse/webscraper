@@ -14,9 +14,9 @@ class FirefoxMachine(Machine):
         options = FirefoxOptions()
         profile = webdriver.FirefoxProfile()
 
-        # options.add_argument("--headless")
-        # options.add_argument("--width=" + windowsize.split(",")[0])
-        # options.add_argument("--height=" + windowsize.split(",")[1])
+        options.add_argument("--headless")
+        options.add_argument("--width=" + windowsize.split(",")[0])
+        options.add_argument("--height=" + windowsize.split(",")[1])
 
         profile.set_preference("general.useragent.override", UserAgent().random) #usage of rotating user agents
 
@@ -32,5 +32,3 @@ class FirefoxMachine(Machine):
 
         self.driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options, firefox_profile=profile)
 
-    def clicklink(self, url):
-        print("clicking:" + url)

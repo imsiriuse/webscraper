@@ -41,7 +41,7 @@
       "type": "integer"
     },
     "windowsizes": {
-      "description": "first page",
+      "description": "array of different sizes of headless browser",
       "type": "array",
       "minItems": 1,
       "items" :{
@@ -50,7 +50,7 @@
       }
     },
     "start": {
-      "description": "array of different sizes of headless browser",
+      "description":"first page",
       "type": "string",
       "pattern": "^https?://"
     },

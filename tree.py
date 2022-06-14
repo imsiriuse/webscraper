@@ -5,6 +5,7 @@ import htmlparsing
 import random
 from random import randint
 
+
 class Tree:
     def __init__(self, starturl):
         self.root = page.Page(url=starturl, parent=None, parserid=0)
@@ -23,17 +24,17 @@ class Tree:
             return None
         self.current = node
 
-    def gethtml(driver, timemin, timemax):
+    def gethtml(self, driver, timemin, timemax):
         # set delay, to slow down downloading
         timeout = randint(timemin, timemax) / 1000
 
-        driver.wait(timeout)
+        driver.implicitly_wait(timeout)
 
         # return html code of webpage in utf8
         return driver.page_source.encode('utf8')
 
     def opencurrent(self, driver):
-        # print("otvaram: " + self.current.url)
+        print("otvaram: " + self.current.url)
         html = self.gethtml(driver, config.CONFIG["timeout"][0], config.CONFIG["timeout"][1])
 
         parser = config.CONFIG["parsetree"][self.current.parserid]
@@ -80,8 +81,8 @@ class Tree:
 
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
-        #print("skacem dozadu o :" + str(numberofbacks))
-        #print("som v hlbke: "+ str(len(self.pagestack)))
+        print("skacem dozadu o :" + str(numberofbacks))
+        print("som v hlbke: "+ str(len(self.pagestack)))
         for i in range(numberofbacks):
             self.pagestack.pop()
             self.current = self.current.parent
@@ -90,13 +91,12 @@ class Tree:
         return self.current.isleaf()
 
     def gonext(self, driver):
-        # print("skacem do: "  + self.current.url)
+        print("skacem do: "  + self.current.url)
         #choose link where to jump
         self.current = random.choice(self.current.childs)
         self.pagestack.append(self.current)
 
-        virtualbrowser.clickonlink(driver, self.current.url)
-
+        driver.get(self.current.url)
 
     def alltraversed(self):
         if self.root.opened and len(self.root.childs) == 0:
