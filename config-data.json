@@ -4,17 +4,28 @@
     "threads": 1,
     "timeout":[3000,5000],
     "start": "https://localhost:4321/test1/",
-    "contentselectors":[
-        ".page-title",
-        ".summary .woocommerce-Price-amount bdi",
-        ".woocommerce-Tabs-panel--description p"
-    ],
     "windowsizes": ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"],
     "driver": "firefox",
-    "parsetree": [ 
-        {"nextselector": ".categorylist"},
-        {"pageselector": ".page-numbers",
-         "nextselector": ".woocommerce-loop-product__link"},
-        {"contselector": [0, 1, 2]}
+    "parsetree": [{
+        "nextselector": {
+            "clickseries": [".browse-category-wrap"],
+            "link": ".categorylist"
+        }},{
+        "pageselector": {
+            "link": ".page-numbers"
+        }},{
+        "nextselector": {
+            "link": ".woocommerce-loop-product__link"
+        }},
+        {"contselector": {
+            "link": ".page-title"
+        }}, {
+        "contselector": {
+            "link": ".woocommerce-Tabs-panel--description p"
+        }},{
+        "contselector": {
+            "link": ".summary .woocommerce-Price-amount bdi"
+            }
+        }
     ]
 }

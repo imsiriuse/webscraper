@@ -8,10 +8,10 @@ if __name__ == '__main__':
 
     # start of scraping process
     scraper = webscraper.Scraper()
-    scraper.start()
-    results = scraper.getResults()
+    #scraper.start()
+    #results = scraper.getResults()
 
     # saving result table as csv
-    with open("results.csv", "w", newline='', encoding='utf-8') as results_file:
-       csvWriter = csv.writer(results_file, delimiter=';')
-       csvWriter.writerows(results)
+    # with open("results.csv", "w", newline='', encoding='utf-8') as results_file:
+    #    csvWriter = csv.writer(results_file, delimiter=';')
+    #    csvWriter.writerows(results)

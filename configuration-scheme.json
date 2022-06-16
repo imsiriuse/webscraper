@@ -1,7 +1,7 @@
 {
   "title": "Scraper configuration",
   "description": "Contains configuration data and scraping tree logic for Webscraper",
-  "required": [ "version", "start", "contentselectors", "parsetree", "windowsizes", "driver"],
+  "required": [ "version", "start", "parsetree", "windowsizes", "driver"],
   "type": "object",
   "properties": {
     "version": {
@@ -37,11 +37,8 @@
       "minItems": 2,
       "maxItems": 2
     },
-    "maxtimeout": {
-      "type": "integer"
-    },
     "windowsizes": {
-      "description": "array of different sizes of headless browser",
+      "description": "first page",
       "type": "array",
       "minItems": 1,
       "items" :{
@@ -50,18 +47,10 @@
       }
     },
     "start": {
-      "description":"first page",
+      "description": "array of different sizes of headless browser",
       "type": "string",
       "pattern": "^https?://"
     },
-    "contentselectors": {
-      "description": "List of chained css selectors of content to be scraped",
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    }, 
     "parsetree": {
       "description": "Definition of nodes of parsing logic",
       "type": "array",
@@ -70,17 +59,49 @@
         "properties": {
           "nextselector": {
             "description": "css selector to find next link in html code. if missing not jumping",
-            "type": "string"
-          },
+            "type": "object",
+            "properties": {
+              "link": {
+                "type": "string"
+              },
+              "clickseries": {
+                "type": "array",
+                "description": "if content is rednered by JS, this is array of chain CSS selectors where to be clicked to display links",
+                "items": {
+                  "type": "string"
+                }
+              }
+          }},
           "pageselector": {
-            "description": "css selector to find next link in html code. if missing not jumping",
-            "type": "string"
+            "description": "css selector to find pagging link in html code. if missing not jumping",
+            "type": "object",
+            "properties": {
+              "link": {
+                "type": "string"
+              },
+              "clickseries": {
+                "type": "array",
+                "description": "if content is rednered by JS, this is array of chain CSS selectors where to be clicked to display links",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "contselector": {
-            "description": "Index of css selectors to extract content in node urls pool",
-            "type": "array",
-            "items": {
-              "type": "integer"
+            "description": "css selector to find content to be harvested",
+            "type": "object",
+            "properties": {
+              "link": {
+                "type": "string"
+              },
+              "clickseries": {
+                "type": "array",
+                "description": "if content is rednered by JS, this is array of chain CSS selectors where to be clicked to display links",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
