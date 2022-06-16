@@ -19,7 +19,7 @@ class Scraper:
         driver.get(self.tree.root.url.replace("https://", "http://"))
 
         while not self.tree.alltraversed():
-            print(self.tree.getcurrent())
+            print("som v:" + str(self.tree.getcurrent()))
 
             if not self.tree.iscurrentopen():
 
@@ -68,7 +68,7 @@ class Scraper:
                 output[i][j] = output[i][j].replace(";", ",")
         return output
 
-    def getresults(self):
+    def getResults(self):
         # convert sparse table to csv table
         output = []
         for row in self.results:
