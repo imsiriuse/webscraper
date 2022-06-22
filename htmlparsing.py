@@ -32,17 +32,15 @@ def getlinks(html, selector):
     return links
 
 
-def getcontent(html, contentids, contents):
+def getcontent(html, selector):
     # parse html with BS
     soup = BeautifulSoup(html, "html5lib")
 
-    result = []
-    for selectorid in contentids:
-        tags = soup.select(contents[selectorid])
+    # select all found tags
+    tags = soup.select(selector)
 
-        # add to result file in form of pair col number and string
-        result.append((selectorid, concattags(tags)))
-    return result
+    # TODO multiple tags found are concated not saved
+    return concattags(tags)
 
 def getrandomlink(html, domain):
     pass

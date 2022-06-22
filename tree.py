@@ -1,6 +1,5 @@
 import page
 import config
-import machine
 import htmlparsing
 import random
 from random import randint
@@ -24,9 +23,9 @@ class Tree:
             return None
         self.current = node
 
-    def gethtml(self, driver, timemin, timemax):
+    def gethtml(self, driver):
         # set delay, to slow down downloading
-        timeout = randint(timemin, timemax) / 1000
+        timeout = randint(config.timeout[0], config.timeout[1]) / 1000
 
         driver.implicitly_wait(timeout)
 
@@ -35,13 +34,13 @@ class Tree:
 
     def opencurrent(self, driver):
         print("otvaram: " + self.current.url)
-        html = self.gethtml(driver, config.CONFIG["timeout"][0], config.CONFIG["timeout"][1])
+        html = self.gethtml(driver)
 
         parser = config.CONFIG["parsetree"][self.current.parserid]
 
         result = None
-        if "contents" in parser:
-            result = htmlparsing.getcontent(html, parser["contents"], config.CONFIG["contentselectors"])
+        if "contselector" in parser:
+            result = htmlparsing.getcontent(html, parser["contselector"]["link"])
 
         nextlinks = []
         if "nextselector" in parser:
