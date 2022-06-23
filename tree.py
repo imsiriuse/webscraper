@@ -1,13 +1,14 @@
 import page
-import config
+import config as CFG
 import htmlparsing
 import random
 from random import randint
 
 
 class Tree:
-    def __init__(self, starturl):
-        self.root = page.Page(url=starturl, parent=None, parserid=0)
+    def __init__(self, config):
+        self.config = config
+        self.root = page.Page(url=config.starturl, parent=None, parserid=0)
         self.data = {self.root.url: self.root}
         self.current = self.root
         self.pagestack = [self.current]
@@ -23,20 +24,18 @@ class Tree:
             return None
         self.current = node
 
-    def gethtml(self, driver):
+    def gethtml(self, driver, timeout):
         # set delay, to slow down downloading
-        timeout = randint(config.timeout[0], config.timeout[1]) / 1000
-
         driver.implicitly_wait(timeout)
 
         # return html code of webpage in utf8
         return driver.page_source.encode('utf8')
 
     def opencurrent(self, driver):
-        print("otvaram: " + self.current.url)
-        html = self.gethtml(driver)
+        print("otvaram: " + self.current.url, self.config.timeout)
+        html = self.gethtml(driver, randint(self.config.timeout[0], self.config.timeout[1]) / 1000)
 
-        parser = config.CONFIG["parsetree"][self.current.parserid]
+        parser = self.config.actions[self.current.parserid]
 
         result = None
         if "contselector" in parser:

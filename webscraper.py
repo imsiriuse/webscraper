@@ -1,5 +1,4 @@
 import random
-import config
 import tree
 
 
@@ -40,7 +39,6 @@ class Scraper:
         machine = self.createMachine()
         # set tree to root
         self.tree.current = self.tree.root
-
         # start thread
         self.runthread(machine.driver)
 
@@ -49,7 +47,7 @@ class Scraper:
         self.results = []
 
         # set first set of urls from config file as starts
-        self.tree = tree.Tree(self.config.start)
+        self.tree = tree.Tree(self.config)
 
         # start thread
         self.createthread()

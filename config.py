@@ -1,15 +1,16 @@
 from machine import ChromeMachine
+from machine import FirefoxMachine
 
 class Config:
-    def __init__(self, start):
-        #url of first page
-        self.start = start
+    def __init__(self, starturl):
+        # url of first page
+        self.starturl = starturl
 
         self.proxies = []
         self.threads = 1
         self.timeout = [3000, 5000]
         self.windowsizes = ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"]
-        self.driver = ChromeMachine
+        self.driver = FirefoxMachine
 
         self.actions = None
 
