@@ -1,43 +1,36 @@
-from machine import ChromeMachine
-from machine import FirefoxMachine
+from machine import *
+from actions import *
+from actionsnode import ActionsNode
+
 
 class Config:
     def __init__(self, starturl):
         # url of first page
         self.starturl = starturl
 
+        # settings
         self.proxies = []
         self.threads = 1
-        self.timeout = [3000, 5000]
+        self.timeoutmin = 3000
+        self.timeoutmax = 5000
         self.windowsizes = ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"]
         self.driver = FirefoxMachine
 
-        self.actions = None
+        # parsetree
+        mainpage = ActionsNode([
+            ActionClick(".browse-category-wrap"),
+            ActionNextpage(".categorylist")])
 
-        self.actions = {}
+        productspage = ActionsNode([
+            ActionPaging(".page-numbers"),
+            ActionNextpage(".woocommerce-loop-product__link")])
 
-        self.actions = [
-            {
-                "selector": ".browse-category-wrap",
-                "strategy": "click"
-            },{
-                "selector": ".categorylist",
-                "strategy": "nextpage"
-            },{
-                "selector": ".page-numbers",
-                "strategy": "paging"
-            },{
-                "selector": ".woocommerce-loop-product__link",
-                "strategy": "nextpage"
-            },{
-                "selector": ".page-title",
-                "strategy": "content"
-            },{
-                "selector": ".woocommerce-Tabs-panel--description p",
-                "strategy": "content"
-            },{
-                "selector": ".summary .woocommerce-Price-amount bdi",
-                "strategy": "content"
-            }
-    ]
+        productpage = ActionsNode([
+            ActionContent(".page-title"),
+            ActionContent(".woocommerce-Tabs-panel--description p"),
+            ActionContent(".summary .woocommerce-Price-amount bdi")])
 
+        mainpage.nextnode = productspage
+        productspage.nextnode = productpage
+
+        self.parser = mainpage

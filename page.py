@@ -1,9 +1,9 @@
 class Page:
-    def __init__(self, url, parent, parserid):
+    def __init__(self, url, parent, parser):
         self.url = url
         self.childs = []
         self.parent = parent
-        self.parserid = parserid
+        self.parser = parser
         self.opened = False
 
     def __repr__(self):

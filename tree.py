@@ -1,6 +1,4 @@
 import page
-import config as CFG
-import htmlparsing
 import random
 from random import randint
 
@@ -8,10 +6,11 @@ from random import randint
 class Tree:
     def __init__(self, config):
         self.config = config
-        self.root = page.Page(url=config.starturl, parent=None, parserid=0)
+        self.root = page.Page(url=config.starturl, parent=None, parser=config.parser)
         self.data = {self.root.url: self.root}
         self.current = self.root
         self.pagestack = [self.current]
+        self.results = []
 
     def __str__(self):
         return self.root.printtree(level = 0)
@@ -24,46 +23,36 @@ class Tree:
             return None
         self.current = node
 
-    def gethtml(self, driver, timeout):
+    def addresults(self, results):
+        pass
+
+    def gethtml(self, driver):
         # set delay, to slow down downloading
+        timeout = randint(self.config.timeoutmin, self.config.timeoutmax) / 1000
         driver.implicitly_wait(timeout)
 
         # return html code of webpage in utf8
         return driver.page_source.encode('utf8')
 
-    def opencurrent(self, driver):
-        print("otvaram: " + self.current.url, self.config.timeout)
-        html = self.gethtml(driver, randint(self.config.timeout[0], self.config.timeout[1]) / 1000)
-
-        parser = self.config.actions[self.current.parserid]
-
-        result = None
-        if "contselector" in parser:
-            result = htmlparsing.getcontent(html, parser["contselector"]["link"])
-
-        nextlinks = []
-        if "nextselector" in parser:
-            nextlinks = htmlparsing.getlinks(html, parser["nextselector"])
-
+    def loadnextlinks(self, nextlinks):
         for link in nextlinks:
             if link not in self.data:
-                newpage = page.Page(link, self.current, self.current.parserid + 1)
+                newpage = page.Page(link, self.current, self.config.parser.nextnode)
                 self.current.addchild(newpage)
                 self.data[link] = newpage
 
-        pagelinks = []
-        if "pageselector" in parser:
-            pagelinks = htmlparsing.getlinks(html, parser["pageselector"])
-
+    def loadpagelinks(self, pagelinks):
         for link in pagelinks:
             if link not in self.data:
-                newpage = page.Page(link, self.current, self.current.parserid)
+                newpage = page.Page(link, self.current, self.config.parser)
                 self.current.addchild(newpage)
                 self.data[link] = newpage
 
-        self.current.opened = True
+    def opencurrent(self, driver):
+        print("otvaram: " + self.current.url)
 
-        return result
+        self.current.parser.run(driver, self)
+        self.current.opened = True
 
     def getnumberofbacks(self):
         # generate random number of back clicks
@@ -80,6 +69,7 @@ class Tree:
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
         print("skacem dozadu o :" + str(numberofbacks))
+
         print("som v hlbke: "+ str(len(self.pagestack)))
         for i in range(numberofbacks):
             self.pagestack.pop()
@@ -90,6 +80,7 @@ class Tree:
 
     def gonext(self, driver):
         print("skacem do: "  + self.current.url)
+
         #choose link where to jump
         self.current = random.choice(self.current.childs)
         self.pagestack.append(self.current)

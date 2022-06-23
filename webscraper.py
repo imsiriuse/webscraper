@@ -22,10 +22,7 @@ class Scraper:
             print("som v:" + str(self.tree.getcurrent()))
 
             if not self.tree.iscurrentopen():
-
-                results = self.tree.opencurrent(driver)
-                if results:
-                    self.results.append(results)
+                self.tree.opencurrent(driver)
 
             if self.tree.iscurrentopen():
                 if self.tree.iscurrentleaf():
@@ -43,9 +40,6 @@ class Scraper:
         self.runthread(machine.driver)
 
     def start(self):
-        # erase previous values of results
-        self.results = []
-
         # set first set of urls from config file as starts
         self.tree = tree.Tree(self.config)
 
