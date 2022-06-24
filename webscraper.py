@@ -16,16 +16,17 @@ class Scraper:
 
     def runthread(self, driver):
         # download url through http not https
-        driver.get(self.tree.root.url.replace("https://", "http://"))
+        url = self.tree.root.url.replace("https://", "http://")
+        print(url)
+        driver.get(url)
 
         while not self.tree.alltraversed():
-            print("som v:" + str(self.tree.getcurrent()))
+            print(self.tree.current.parser.actions[0].selector)
 
-            if not self.tree.iscurrentopen():
+            if not self.tree.current.opened:
                 self.tree.opencurrent(driver)
-
-            if self.tree.iscurrentopen():
-                if self.tree.iscurrentleaf():
+            else:
+                if self.tree.current.isleaf():
                     self.tree.deletecurrent()
                     self.tree.gorandomback(driver)
                 else:
@@ -34,8 +35,6 @@ class Scraper:
     def createthread(self):
         # create headless browser
         machine = self.createMachine()
-        # set tree to root
-        self.tree.current = self.tree.root
         # start thread
         self.runthread(machine.driver)
 

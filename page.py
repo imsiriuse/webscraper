@@ -19,12 +19,6 @@ class Page:
             ret += child.printtree(level+1)
         return ret
 
-    def havechild(self, child):
-        if not child:
-            return None
-
-        return child in self.childs
-
     def isleaf(self):
         if len(self.childs) == 0:
             return True

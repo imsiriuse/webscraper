@@ -18,19 +18,21 @@ class Config:
 
         # parsetree
         mainpage = ActionsNode([
-            ActionClick(".browse-category-wrap"),
-            ActionNextpage(".categorylist")])
+            ActionClick(selector = ".browse-category-wrap"),
+            ActionNextpage(selector = ".categorylist")
+        ])
+        paging = ActionsNode([
+            ActionPaging(selector = ".page-numbers"),
+            ActionNextpage(selector = ".woocommerce-loop-product__link")
+        ])
+        product = ActionsNode([
+            ActionGetcontent( selectors = [
+                ".page-title",
+                ".woocommerce-Tabs-panel--description p",
+                ".summary .woocommerce-Price-amount bdi"],
+                alias = "product")
+        ])
 
-        productspage = ActionsNode([
-            ActionPaging(".page-numbers"),
-            ActionNextpage(".woocommerce-loop-product__link")])
-
-        productpage = ActionsNode([
-            ActionContent(".page-title"),
-            ActionContent(".woocommerce-Tabs-panel--description p"),
-            ActionContent(".summary .woocommerce-Price-amount bdi")])
-
-        mainpage.nextnode = productspage
-        productspage.nextnode = productpage
-
+        paging.nextnode = product
+        mainpage.nextnode = paging
         self.parser = mainpage

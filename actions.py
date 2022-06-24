@@ -1,36 +1,28 @@
 import htmlparsing
 
 
-class Action:
-    def __init__(self):
-        pass
-
-    def __call__(self, driver, tree):
-        pass
-
-
-class ActionClick(Action):
+class ActionClick:
     def __init__(self, selector):
-        super().__init__()
         self.selector = selector
 
     def __call__(self, driver, tree):
         pass
 
 
-class ActionPaging  (Action):
+class ActionPaging:
     def __init__(self, selector):
-        super().__init__()
         self.selector = selector
 
     def __call__(self, driver, tree):
-        pagelinks = htmlparsing.getlinks(tree.gethtml(driver), self.selector)
+        html = tree.gethtml(driver)
+
+        pagelinks = htmlparsing.getlinks(html, self.selector)
+
         tree.loadpagelinks(pagelinks)
 
 
-class ActionNextpage(Action):
+class ActionNextpage:
     def __init__(self, selector):
-        super().__init__()
         self.selector = selector
 
     def __call__(self, driver, tree):
@@ -38,11 +30,28 @@ class ActionNextpage(Action):
         tree.loadnextlinks(nextlinks)
 
 
-class ActionContent (Action):
-    def __init__(self, selector):
-        super().__init__()
-        self.selector = selector
+class ActionGetcontent:
+    def __init__(self, selectors, alias, parentselector = None ):
+        self.selectors = selectors
+        self.parentselector = parentselector
+        self.alias = alias
 
     def __call__(self, driver, tree):
-        results = htmlparsing.getcontent(tree.gethtml(driver), self.selector)
-        tree.addresults(results)
+        html = tree.gethtml(driver)
+
+        if self.parentselector:
+            tags = htmlparsing.getcontent(html, self.parentselector)
+        else:
+            tags = [html]
+
+        for tag in tags:
+            for selector in self.selectors:
+                result = htmlparsing.getcontent(tag, selector)
+                result = htmlparsing.concattags(result)
+
+                results = {}
+                results[self.alias] = {selector: result}
+
+            tree.results.append(results)
+        print(results)
+        print("------------------------")

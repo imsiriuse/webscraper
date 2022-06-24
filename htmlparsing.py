@@ -1,8 +1,7 @@
-# module works now only with
-# html code and nothing more
-
 from bs4 import BeautifulSoup
 
+
+# module works now only with html code and nothing more
 def concattags(tags):
     result = ""
     for tag in tags:
@@ -37,10 +36,6 @@ def getcontent(html, selector):
     soup = BeautifulSoup(html, "html5lib")
 
     # select all found tags
-    tags = soup.select(selector)
+    result =  soup.select(selector)
 
-    # TODO multiple tags found are concated not saved
-    return concattags(tags)
-
-def getrandomlink(html, domain):
-    pass
+    return result

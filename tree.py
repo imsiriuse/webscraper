@@ -23,9 +23,6 @@ class Tree:
             return None
         self.current = node
 
-    def addresults(self, results):
-        pass
-
     def gethtml(self, driver):
         # set delay, to slow down downloading
         timeout = randint(self.config.timeoutmin, self.config.timeoutmax) / 1000
@@ -49,7 +46,7 @@ class Tree:
                 self.data[link] = newpage
 
     def opencurrent(self, driver):
-        print("otvaram: " + self.current.url)
+        # print("otvaram: " + self.current.url)
 
         self.current.parser.run(driver, self)
         self.current.opened = True
@@ -68,9 +65,9 @@ class Tree:
 
     def gorandomback(self, driver):
         numberofbacks = self.getnumberofbacks()
-        print("skacem dozadu o :" + str(numberofbacks))
+        #  print("skacem dozadu o :" + str(numberofbacks))
 
-        print("som v hlbke: "+ str(len(self.pagestack)))
+        # print("som v hlbke: "+ str(len(self.pagestack)))
         for i in range(numberofbacks):
             self.pagestack.pop()
             self.current = self.current.parent
@@ -79,9 +76,9 @@ class Tree:
         return self.current.isleaf()
 
     def gonext(self, driver):
-        print("skacem do: "  + self.current.url)
+        # print("skacem do: "  + self.current.url)
 
-        #choose link where to jump
+        #  choose link where to jump
         self.current = random.choice(self.current.childs)
         self.pagestack.append(self.current)
 
