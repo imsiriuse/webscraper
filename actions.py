@@ -31,7 +31,7 @@ class ActionNextpage:
 
 
 class ActionGetcontent:
-    def __init__(self, selectors, alias, parentselector = None ):
+    def __init__(self, selectors, alias, parentselector=None):
         self.selectors = selectors
         self.parentselector = parentselector
         self.alias = alias
@@ -45,13 +45,13 @@ class ActionGetcontent:
             tags = [html]
 
         for tag in tags:
+            results = {}
             for selector in self.selectors:
                 result = htmlparsing.getcontent(tag, selector)
                 result = htmlparsing.concattags(result)
+                results[selector] = result
 
-                results = {}
-                results[self.alias] = {selector: result}
-
+            results["type"] = self.alias
             tree.results.append(results)
-        print(results)
-        print("------------------------")
+            print(results)
+            print("------------------------")

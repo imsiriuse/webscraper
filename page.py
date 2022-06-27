@@ -14,7 +14,7 @@ class Page:
         return result
 
     def printtree(self, level=0):
-        ret = " - "*level + self.url + " - id:" + str(self.parserid) + "\n"
+        ret = " - "*level + self.url + " - id:" + str(self.parser) + "\n"
         for child in self.childs:
             ret += child.printtree(level+1)
         return ret
@@ -41,4 +41,3 @@ class Page:
             self.parent.removechild(self)
         else:
             return None
-

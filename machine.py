@@ -14,10 +14,16 @@ class Machine:
         self.windowsize = windowsize
         self.driver = None
 
-    def wait(self, time):
-        self.driver.implicitly_wait(time)
+    def loadurl(self, url, timeout, https=False):
+        # set delay, to slow down downloading
+        self.driver.implicitly_wait(timeout)
 
-    def loadurl(self, url):
+        # download url through http not https
+        if not https:
+            url = url.replace("https://", "http://")
+        else:
+            url = url.replace("http://", "https://")
+
         self.driver.get(url)
 
 
@@ -79,7 +85,10 @@ class ChromeMachine(Machine):
         chrome_options.add_argument("--user-agent=" + UserAgent().random)
 
         # creating instance of Chrome browser
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=chrome_options
+        )
 
 
 class FirefoxMachine(Machine):
@@ -106,4 +115,8 @@ class FirefoxMachine(Machine):
         profile.set_preference("browser.display.use_document_fonts", 0)  # Don't load document fonts.
         profile.set_preference("browser.shell.checkDefaultBrowser", False)
 
-        self.driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options, firefox_profile=profile)
+        self.driver = webdriver.Firefox(
+            service=Service(GeckoDriverManager().install()),
+            options=options,
+            firefox_profile=profile
+        )

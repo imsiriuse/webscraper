@@ -13,7 +13,7 @@ class Tree:
         self.results = []
 
     def __str__(self):
-        return self.root.printtree(level = 0)
+        return self.root.printtree(level=0)
 
     def getcurrent(self):
         return self.current
@@ -24,30 +24,23 @@ class Tree:
         self.current = node
 
     def gethtml(self, driver):
-        # set delay, to slow down downloading
-        timeout = randint(self.config.timeoutmin, self.config.timeoutmax) / 1000
-        driver.implicitly_wait(timeout)
-
-        # return html code of webpage in utf8
-        return driver.page_source.encode('utf8')
+        return driver.page_source.encode(self.config.encoding)
 
     def loadnextlinks(self, nextlinks):
         for link in nextlinks:
             if link not in self.data:
-                newpage = page.Page(link, self.current, self.config.parser.nextnode)
+                newpage = page.Page(link, self.current, self.current.parser.nextnode)
                 self.current.addchild(newpage)
                 self.data[link] = newpage
 
     def loadpagelinks(self, pagelinks):
         for link in pagelinks:
             if link not in self.data:
-                newpage = page.Page(link, self.current, self.config.parser)
+                newpage = page.Page(link, self.current, self.current.parser)
                 self.current.addchild(newpage)
                 self.data[link] = newpage
 
     def opencurrent(self, driver):
-        # print("otvaram: " + self.current.url)
-
         self.current.parser.run(driver, self)
         self.current.opened = True
 
@@ -63,11 +56,8 @@ class Tree:
     def iscurrentopen(self):
         return self.current.opened
 
-    def gorandomback(self, driver):
+    def gorandomback(self):
         numberofbacks = self.getnumberofbacks()
-        #  print("skacem dozadu o :" + str(numberofbacks))
-
-        # print("som v hlbke: "+ str(len(self.pagestack)))
         for i in range(numberofbacks):
             self.pagestack.pop()
             self.current = self.current.parent
@@ -75,14 +65,10 @@ class Tree:
     def iscurrentleaf(self):
         return self.current.isleaf()
 
-    def gonext(self, driver):
-        # print("skacem do: "  + self.current.url)
-
+    def gonext(self):
         #  choose link where to jump
         self.current = random.choice(self.current.childs)
         self.pagestack.append(self.current)
-
-        driver.get(self.current.url)
 
     def alltraversed(self):
         if self.root.opened and len(self.root.childs) == 0:
