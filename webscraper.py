@@ -25,20 +25,15 @@ class Scraper:
         )
 
         while not self.tree.alltraversed():
-            if not self.tree.current.opened:
-                self.tree.opencurrent(machine.driver)
+            page = self.tree.current
+            if not page.opened:
+                page.open(machine)
             else:
-                if self.tree.current.isleaf():
-                    self.tree.deletecurrent()
-                    self.tree.gorandomback()
+                if page.isleaf():
+                    page.removeself()
+                    self.tree.gorandomback(machine)
                 else:
                     self.tree.gonext()
-
-            print(self.tree.current.url)
-            machine.loadurl(
-                url=self.tree.current.url,
-                timeout=randint(self.config.timeoutmin, self.config.timeoutmax) / 1000
-            )
 
     def createthread(self):
         # create headless browser
@@ -46,8 +41,6 @@ class Scraper:
         # start thread
         try:
             self.runthread(machine)
-        except:
-            traceback.print_exc()
         finally:
             machine.driver.close()
 

@@ -49,4 +49,9 @@ class Config:
         self.parser = mainpage
 
         # what kinds of random actions scraper should do
+        # click on random links
         self.randomactions = []
+
+        # what kind of actions scraper should do during waiting
+        # scrolling, mouse moves etc
+        self.waitingactions = []

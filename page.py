@@ -41,3 +41,7 @@ class Page:
             self.parent.removechild(self)
         else:
             return None
+
+    def open(self, machine):
+        self.parser.run(machine, self)
+        self.opened = True

@@ -3,9 +3,9 @@ class ActionsNode:
         self.actions = actions
         self.nextnode = nextnode
 
-    def run(self, driver, tree):
+    def run(self, machine, tree):
         for action in self.actions:
-            action(driver, tree)
+            action(machine, tree)
 
     def __str__(self):
         print(self.actions)
