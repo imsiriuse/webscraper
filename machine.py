@@ -4,24 +4,41 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from polling2 import poll
+from polling2 import TimeoutException as PollingTimeoutException
+import time
+from config import Timeout
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class Machine:
-    def __init__(self, proxy="127.0.0.1", windowsize="2048,1080", waitmax=5):
+    def __init__(self, proxy="127.0.0.1", windowsize="2048,1080", timeout=Timeout()):
         self.proxy = proxy
         self.windowsize = windowsize
         self.driver = None
-        self.waitmax = waitmax
+        self.timeout = timeout
+        self.wait = None
 
-    def loadurl(self, url, timeout, https=False):
-        self.driver.implicitly_wait(timeout)
+    def waituntil(self, expression):
+        try:
+            self.wait.until(expression)
+        except TimeoutException:
+            print("Element can't be loaded, waited: " + str(self.timeout.max) + "sec, skipping...")
+            return False
+        except WebDriverException as e:
+            print(e)
+            return False
+
+        return True
+
+    def loadurl(self, url, https=False):
+        time.sleep(self.timeout.getrandom())
 
         if not https:
             url = url.replace("https://", "http://")
@@ -30,105 +47,88 @@ class Machine:
 
         self.driver.get(url)
 
+        self.waituntil(
+            lambda driver: driver.execute_script("return document.readyState") == "complete"
+        )
+
     def gethtml(self, encoding="utf8"):
         return self.driver.page_source.encode(encoding)
 
-    # element must be visible or it is an honeypot
-    # usage when there have to be clicked on something
-    # to display something else
-    def clickon(self, selector):
-        try:
-            WebDriverWait(self.driver, self.waitmax).until(
-                expected_conditions.presence_of_element_located(
-                    (By.CSS_SELECTOR, selector)
-                )
-            )
-
-            element = self.driver.find_element(By.CSS_SELECTOR, selector)
-            action = ActionChains(self.driver)
-
-            if not element.is_displayed():
-                print("Element:" + selector + "is not visible (honeypot?)")
-                return False
-
-            action.move_to_element(element).click().perform()
-
-            self.driver.implicitly_wait(1)
-
-        except TimeoutException:
-            print("Element can't be loaded, waited: " + str(self.waitmax) + "sec, skipping...")
+    @staticmethod
+    def ishoneypot(element):
+        if element.is_displayed():
             return False
 
-        except WebDriverException as e:
-            print(e)
-            return False
+        # TODO detection of other honeypots types
 
         return True
+
+    def clickon(self, selector):
+        self.waituntil(
+            expected_conditions.presence_of_element_located(
+                (By.CSS_SELECTOR, selector)
+            )
+        )
+
+        element = self.driver.find_element(By.CSS_SELECTOR, selector)
+        action = ActionChains(self.driver)
+
+        if self.ishoneypot(element):
+            print("Element:" + selector + "is not visible (honeypot?)")
+            return False
+
+        time.sleep(self.timeout.getrandom())
+
+        action.move_to_element(element).click().perform()
+        self.driver.implicitly_wait(1)
 
     def clicklink(self, url):
         selector = 'a[href="' + url + '"]'
+        oldurl = self.driver.current_url
 
-        try:
-            oldurl = self.driver.current_url
+        self.waituntil(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
+        )
 
-            wait = WebDriverWait(driver=self.driver, timeout=self.waitmax, poll_frequency=1)
+        self.waituntil(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector))
+        )
 
-            wait.until(
-                expected_conditions.presence_of_element_located(
-                    (By.CSS_SELECTOR, selector)
-                )
-            )
+        action = ActionChains(self.driver)
+        element = self.driver.find_element(By.CSS_SELECTOR, selector)
 
-            wait.until(
-                expected_conditions.visibility_of_element_located(
-                    (By.CSS_SELECTOR, selector)
-                )
-            )
+        self.waituntil(
+            lambda driver: not driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        )
 
-            wait.until(
-                expected_conditions.element_to_be_clickable(
-                    (By.CSS_SELECTOR, selector)
-                )
-            )
+        time.sleep(self.timeout.getrandom())
 
-            action = ActionChains(self.driver)
+        action.move_to_element(element).click().perform()
 
-            element = self.driver.find_element(By.CSS_SELECTOR, selector)
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        self.waituntil(
+            expected_conditions.url_changes(url=oldurl)
+        )
 
-            action.move_to_element(element).click().perform()
-
-            wait.until(
-                expected_conditions.url_changes(url=oldurl)
-            )
-
-            wait.until(
-                expected_conditions.visibility_of_element_located(
-                    (By.CSS_SELECTOR, "body")
-                )
-            )
-
-        except TimeoutException:
-            print("Element can't be loaded, waited: " + str(self.waitmax) + "sec, skipping...")
-            return False
-
-        return True
+        self.waituntil(
+            lambda driver: driver.execute_script("return document.readyState") == "complete"
+        )
 
     def goback(self, steps=1):
         for i in range(steps):
             oldurl = self.driver.current_url
+
+            time.sleep(self.timeout.getrandom())
+
             self.driver.back()
 
-            wait = WebDriverWait(driver=self.driver, timeout=self.waitmax, poll_frequency=1)
+            wait = WebDriverWait(self.driver, self.timeout.max)
 
-            wait.until(
+            self.waituntil(
                 expected_conditions.url_changes(url=oldurl)
             )
 
-            wait.until(
-                expected_conditions.visibility_of_element_located(
-                    (By.CSS_SELECTOR, "body")
-                )
+            self.waituntil(
+                lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
 
 
@@ -205,13 +205,10 @@ class FirefoxMachine(Machine):
         profile = webdriver.FirefoxProfile()
 
         # options.add_argument("--headless")
-        options.add_argument("--width=" + windowsize.split(",")[0])
-        options.add_argument("--height=" + windowsize.split(",")[1])
+        options.add_argument("--width=" + self.windowsize.split(",")[0])
+        options.add_argument("--height=" + self.windowsize.split(",")[1])
 
         profile.set_preference("general.useragent.override", UserAgent().random)  # usage of rotating user agents
-
-        profile.set_preference('permissions.default.stylesheet', 2)  # disable css
-        profile.set_preference("permissions.default.image", 2)  # disable images
 
         profile.set_preference("network.http.pipelining", True)  # enable proxies
         profile.set_preference("network.http.proxy.pipelining", True)   # enable proxies
@@ -225,3 +222,5 @@ class FirefoxMachine(Machine):
             options=options,
             firefox_profile=profile
         )
+
+        self.wait = WebDriverWait(driver=self.driver, timeout=self.timeout.max)

@@ -1,7 +1,5 @@
 import random
 import tree
-from random import randint
-import traceback
 
 
 class Scraper:
@@ -15,14 +13,12 @@ class Scraper:
 
     def createMachine(self):
         return self.config.driver(
-            windowsize=random.choice(self.config.windowsizes)
+            windowsize=random.choice(self.config.windowsizes),
+            timeoutmin=self.config.timeout
         )
 
     def runthread(self, machine):
-        machine.loadurl(
-            url=self.tree.root.url,
-            timeout=randint(self.config.timeoutmin, self.config.timeoutmax) / 1000
-        )
+        machine.loadurl(url=self.tree.root.url)
 
         while not self.tree.alltraversed():
             page = self.tree.current

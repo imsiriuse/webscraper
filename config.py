@@ -1,6 +1,17 @@
 from machine import *
 from actions import *
 from actionsnode import ActionsNode
+from random import randint
+
+
+class Timeout:
+    def __init__(self, max=5, min=1, step=1):
+        self.max = max
+        self.min = min
+        self.step = step
+
+    def getrandom(self):
+        return randint(self.min*1000, self.max*1000)/1000
 
 
 class Config:
@@ -11,8 +22,7 @@ class Config:
         # settings
         self.proxies = []
         self.threads = 1
-        self.timeoutmin = 3000
-        self.timeoutmax = 5000
+        self.timeout = Timeout(max=5, min=1, step=1 )
         self.windowsizes = ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"]
         self.driver = FirefoxMachine
         self.encoding = "utf8"
