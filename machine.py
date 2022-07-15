@@ -16,12 +16,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class Machine:
-    def __init__(self, proxy="127.0.0.1", windowsize="2048,1080", timeout=Timeout()):
-        self.proxy = proxy
-        self.windowsize = windowsize
+    def __init__(self):
+        self.proxy = None
+        self.windowsize = None
         self.driver = None
-        self.timeout = timeout
+        self.timeout = None
         self.wait = None
+        self.honeypots = None
 
     def waituntil(self, expression):
         try:
@@ -52,33 +53,41 @@ class Machine:
     def gethtml(self, encoding="utf8"):
         return self.driver.page_source.encode(encoding)
 
-    @staticmethod
-    def ishoneypot(element):
-        if element.is_displayed():
-            return False
+    def getcss(self, element):
+        styles = self.driver.execute_script(
+            'var items = {};' +
+            'var compsty = getComputedStyle(arguments[0]);' +
+            'var len = compsty.length;' +
+            'for (index = 0; index < len; index++)' +
+            '{items [compsty[index]] = compsty.getPropertyValue(compsty[index])};' +
+            'return items;', element)
 
-        # TODO detection of other honeypots types
+        return styles
 
-        return True
+    def ishoneypot(self, element):
+        if self.honeypots:
+            styles = self.getcss(element)
+            if styles["display"] == "none":
+                return True
+            if styles["opacity"] == "0":
+                return True
+        else:
+            return element.is_displayed()
+
+        return False
 
     def clickon(self, selector):
         self.waituntil(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
 
-        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
         action = ActionChains(self.driver)
+        element = self.driver.find_element(By.CSS_SELECTOR, selector)
 
-        for element in elements:
-            if self.ishoneypot(element):
-                elements.remove(element)
-                continue
-
-        if not elements:
-            print("All found elements:" + selector + "are not visible (honeypot?)")
+        if self.ishoneypot(element):
+            print("Element is honeypot")
             return False
 
-        element = elements.pop()
         time.sleep(self.timeout.getrandom())
 
         self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
@@ -93,18 +102,11 @@ class Machine:
         )
 
         action = ActionChains(self.driver)
-        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+        element = self.driver.find_element(By.CSS_SELECTOR, selector)
 
-        for element in elements:
-            if self.ishoneypot(element):
-                elements.remove(element)
-                continue
-
-        if not elements:
-            print("All found elements:" + selector + "are not visible (honeypot?)")
+        if self.ishoneypot(element):
+            print("Element is honeypot")
             return False
-
-        element = elements.pop()
 
         self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
         time.sleep(self.timeout.getrandom())
@@ -200,10 +202,14 @@ class ChromeMachine(Machine):
 
 
 class FirefoxMachine(Machine):
-    def __init__(self, proxy="127.0.0.1", windowsize="2048,1080"):
-        super().__init__(proxy, windowsize)
+    def __init__(self, proxy="127.0.0.1", windowsize="2048,1080", timeout=Timeout(), honeypots=False):
+        super().__init__()
 
-        # setting of geckodriver
+        self.proxy = proxy
+        self.windowsize = windowsize
+        self.timeout = timeout
+        self.honeypots = honeypots
+
         options = FirefoxOptions()
         profile = webdriver.FirefoxProfile()
 

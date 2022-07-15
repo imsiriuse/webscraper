@@ -26,6 +26,7 @@ class Config:
         self.windowsizes = ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"]
         self.driver = FirefoxMachine
         self.encoding = "utf8"
+        self.honeypots = False
 
         # parsetree
         mainpage = ActionsNode([

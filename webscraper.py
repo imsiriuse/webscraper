@@ -14,7 +14,8 @@ class Scraper:
     def createMachine(self):
         return self.config.driver(
             windowsize=random.choice(self.config.windowsizes),
-            timeoutmin=self.config.timeout
+            timeoutmin=self.config.timeout,
+            honeypots=self.honeypots
         )
 
     def runthread(self, machine):
