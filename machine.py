@@ -10,8 +10,6 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from polling2 import poll
-from polling2 import TimeoutException as PollingTimeoutException
 import time
 from config import Timeout
 from selenium.webdriver.support.ui import WebDriverWait
@@ -65,44 +63,51 @@ class Machine:
 
     def clickon(self, selector):
         self.waituntil(
-            expected_conditions.presence_of_element_located(
-                (By.CSS_SELECTOR, selector)
-            )
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
 
-        element = self.driver.find_element(By.CSS_SELECTOR, selector)
+        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
         action = ActionChains(self.driver)
 
-        if self.ishoneypot(element):
-            print("Element:" + selector + "is not visible (honeypot?)")
+        for element in elements:
+            if self.ishoneypot(element):
+                elements.remove(element)
+                continue
+
+        if not elements:
+            print("All found elements:" + selector + "are not visible (honeypot?)")
             return False
 
+        element = elements.pop()
         time.sleep(self.timeout.getrandom())
 
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
         action.move_to_element(element).click().perform()
-        self.driver.implicitly_wait(1)
 
-    def clicklink(self, url):
-        selector = 'a[href="' + url + '"]'
+    def clicklink(self, url, selector):
+        selector = selector + '[href*="' + url + '"]'
         oldurl = self.driver.current_url
 
         self.waituntil(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
 
-        self.waituntil(
-            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector))
-        )
-
         action = ActionChains(self.driver)
-        element = self.driver.find_element(By.CSS_SELECTOR, selector)
+        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
 
-        self.waituntil(
-            lambda driver: not driver.execute_script("arguments[0].scrollIntoView(true);", element)
-        )
+        for element in elements:
+            if self.ishoneypot(element):
+                elements.remove(element)
+                continue
 
+        if not elements:
+            print("All found elements:" + selector + "are not visible (honeypot?)")
+            return False
+
+        element = elements.pop()
+
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
         time.sleep(self.timeout.getrandom())
-
         action.move_to_element(element).click().perform()
 
         self.waituntil(
@@ -120,8 +125,6 @@ class Machine:
             time.sleep(self.timeout.getrandom())
 
             self.driver.back()
-
-            wait = WebDriverWait(self.driver, self.timeout.max)
 
             self.waituntil(
                 expected_conditions.url_changes(url=oldurl)
