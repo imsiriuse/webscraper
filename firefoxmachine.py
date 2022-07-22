@@ -5,7 +5,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium import webdriver
 from fake_useragent import UserAgent
-from config import Timeout
+from timeout import Timeout
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
