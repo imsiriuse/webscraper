@@ -3,9 +3,14 @@ class ActionsNode:
         self.actions = actions
         self.nextnode = nextnode
 
-    def run(self, machine, tree):
-        for action in self.actions:
-            action(machine, tree)
+    def run(self, machine, tree, routine=False):
+        if not routine:
+            for action in self.actions:
+                action(machine, tree)
+        else:
+            for action in self.actions:
+                if action.routine:
+                    action(machine, tree)
 
     def __str__(self):
         print(self.actions)

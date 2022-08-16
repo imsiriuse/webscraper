@@ -1,4 +1,3 @@
-from time import sleep
 from machine import Machine
 from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
@@ -10,11 +9,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.common.exceptions import TimeoutException, WebDriverException
 
 
 class FirefoxMachine(Machine):
-    def __init__(self, proxy="127.0.0.1", windowsize="2048,1080", timeout=Timeout(), honeypots=False):
+    def __init__(
+            self,
+            proxy="127.0.0.1",
+            windowsize="1024,768",
+            timeout=Timeout(),
+            honeypots=False,
+            headless=True
+    ):
         super().__init__()
 
         self.proxy = proxy
@@ -25,7 +30,9 @@ class FirefoxMachine(Machine):
         options = FirefoxOptions()
         profile = webdriver.FirefoxProfile()
 
-        # options.add_argument("--headless")
+        if headless:
+            options.add_argument("--headless")
+
         options.add_argument("--width=" + self.windowsize.split(",")[0])
         options.add_argument("--height=" + self.windowsize.split(",")[1])
 
@@ -46,80 +53,94 @@ class FirefoxMachine(Machine):
 
         self.wait = WebDriverWait(driver=self.driver, timeout=self.timeout.max)
 
-    def waituntil(self, expression):
-        try:
-            self.wait.until(expression)
-        except TimeoutException:
-            print("Element can't be loaded, waited: " + str(self.timeout.max) + "sec, skipping...")
-            return False
-        except WebDriverException as e:
-            print(e)
-            return False
-
-        return True
-
     def loadurl(self, url, https=False):
-        sleep(self.timeout.getrandom())
+        # self.timeout.run()
 
-        if not https:
-            url = url.replace("https://", "http://")
-        else:
-            url = url.replace("http://", "https://")
+        # TODO https/http
+        # if not https:
+        #     url = url.replace("https://", "http://")
+        # else:
+        #     url = url.replace("http://", "https://")
 
         self.driver.get(url)
 
-        self.waituntil(
+        self.wait.until(
             lambda driver: driver.execute_script("return document.readyState") == "complete"
         )
 
     def gethtml(self, encoding="utf8"):
         return self.driver.page_source.encode(encoding)
 
-    def getcss(self, element):
+    def getcss(self, selector, property):
+        self.wait.until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
+        )
+        element = self.driver.find_element(By.CSS_SELECTOR, selector)
         styles = self.driver.execute_script(
-            'var items = {};' +
-            'var compsty = getComputedStyle(arguments[0]);' +
-            'var len = compsty.length;' +
-            'for (index = 0; index < len; index++)' +
-            '{items [compsty[index]] = compsty.getPropertyValue(compsty[index])};' +
-            'return items;', element)
-
+            'var compsty = getComputedStyle(arguments[0]);' 
+            'return compsty["' + property + '"];', element
+        )
         return styles
 
     def ishoneypot(self, element):
         if self.honeypots:
-            styles = self.getcss(element)
-            if styles["display"] == "none":
+            if self.getcss(element, "display") == "none":
                 return True
-            if styles["opacity"] == "0":
+            if self.getcss(element, "opacity") == "0":
+                return True
+            if self.getcss(element, "height") == "0px":
+                return True
+            if self.getcss(element, "width") == "0px":
                 return True
         else:
-            return element.is_displayed()
+            return not element.is_displayed()
 
         return False
 
     def clickon(self, selector):
-        self.waituntil(
+        self.wait.until(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
 
         action = ActionChains(self.driver)
         element = self.driver.find_element(By.CSS_SELECTOR, selector)
 
-        if self.ishoneypot(element):
-            print("Element is honeypot")
-            return False
-
-        sleep(self.timeout.getrandom())
+        # self.timeout.run()
 
         self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
         action.move_to_element(element).click().perform()
+
+    def openmenu(self, buttonselector, menuselector):
+        self.wait.until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, buttonselector))
+        )
+
+        action = ActionChains(self.driver)
+        element = self.driver.find_element(By.CSS_SELECTOR, buttonselector)
+
+        # self.timeout.run()
+
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        action.move_to_element(element).click().perform()
+
+        width = self.getcss(menuselector, "width")
+        height = self.getcss(menuselector, "height")
+        timeout = 0
+        while timeout < self.timeout.max:
+            self.timeout.dostep()
+            timeout = timeout + self.timeout.step
+            newwidth = self.getcss(menuselector, "width")
+            newheight = self.getcss(menuselector, "height")
+            if width == newwidth and height == newheight:
+                break
+            width = newwidth
+            height = newheight
 
     def clicklink(self, url, selector):
         selector = selector + '[href*="' + url + '"]'
         oldurl = self.driver.current_url
 
-        self.waituntil(
+        self.wait.until(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, selector))
         )
 
@@ -132,29 +153,30 @@ class FirefoxMachine(Machine):
 
         self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
 
-        sleep(self.timeout.getrandom())
+        # self.timeout.run()
+
         action.move_to_element(element).click().perform()
 
-        self.waituntil(
+        self.wait.until(
             expected_conditions.url_changes(url=oldurl)
         )
 
-        self.waituntil(
+        self.wait.until(
             lambda driver: driver.execute_script("return document.readyState") == "complete"
         )
 
     def goback(self, steps=1):
         for i in range(steps):
-            oldurl = self.driver.current_url
+            # self.timeout.run()
 
-            sleep(self.timeout.getrandom())
+            oldurl = self.driver.current_url
 
             self.driver.back()
 
-            self.waituntil(
+            self.wait.until(
                 expected_conditions.url_changes(url=oldurl)
             )
 
-            self.waituntil(
+            self.wait.until(
                 lambda driver: driver.execute_script("return document.readyState") == "complete"
             )

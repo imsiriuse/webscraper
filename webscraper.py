@@ -14,29 +14,32 @@ class Scraper:
     def createMachine(self):
         return self.config.driver(
             windowsize=random.choice(self.config.windowsizes),
-            timeoutmin=self.config.timeout,
-            honeypots=self.config.honeypots
+            timeout=self.config.timeout,
+            honeypots=self.config.honeypots,
+            headless=self.config.headless
         )
 
     def runthread(self, machine):
-        machine.loadurl(url=self.tree.root.url)
+        while not self.tree.end():
+            current = self.tree.current
 
-        while not self.tree.alltraversed():
-            page = self.tree.current
-            if not page.opened:
-                page.open(machine)
+            if not current.opened:
+                print("opening:" + str(current))
+                self.tree.open(current, machine)
             else:
-                if page.isleaf():
-                    page.removeself()
+                if current.isleaf():
+                    print("removing:" + str(current))
+                    self.tree.remove(current)
                     self.tree.gorandomback(machine)
                 else:
-                    self.tree.gonext()
+                    self.tree.gonext(machine)
 
     def createthread(self):
         # create headless browser
         machine = self.createMachine()
         # start thread
         try:
+            machine.loadurl(url=self.tree.root.url)
             self.runthread(machine)
         finally:
             machine.driver.close()

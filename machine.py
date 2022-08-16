@@ -16,7 +16,7 @@ class Machine:
     def gethtml(self, encoding="utf8"):
         pass
 
-    def getcss(self, element):
+    def getcss(self, element, property):
         pass
 
     def ishoneypot(self, element):
@@ -29,4 +29,7 @@ class Machine:
         pass
 
     def goback(self, steps=1):
+        pass
+
+    def transitionend(self, element):
         pass

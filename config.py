@@ -12,27 +12,30 @@ class Config:
         # settings
         self.proxies = []
         self.threads = 1
-        self.timeout = Timeout(max=5, min=1, step=1)
+        self.timeout = Timeout()
         self.windowsizes = ["1280,720", "1920,1080", "2560,1440", "2048,1080", "3840,2160"]
         self.driver = FirefoxMachine
         self.encoding = "utf8"
         self.honeypots = False
+        self.https = False
+        self.headless = True
 
         # parsetree
         mainpage = ActionsNode([
             ActionClick(
-                selector=".browse-category-wrap"
+                selector=".browse-category-wrap",
+                routine=True
             ),
             ActionNextpage(
-                selector=".categorylist"
+                selector=".categorylist a"
             )
-        ])
+            ])
         paging = ActionsNode([
             ActionPaging(
-                selector=".page-numbers"
+                selector="a.page-numbers"
             ),
             ActionNextpage(
-                selector=".woocommerce-loop-product__link"
+                selector="woocommerce-loop-product__title a"
             )
         ])
         product = ActionsNode([

@@ -2,34 +2,38 @@ import htmlparsing
 
 
 class ActionClick:
-    def __init__(self, selector):
+    def __init__(self, selector, routine=False):
         self.selector = selector
+        self.routine = routine
 
-    def __call__(self, machine):
+    def __call__(self, machine, tree):
         machine.clickon(self.selector)
 
 
 class ActionPaging:
-    def __init__(self, selector):
+    def __init__(self, selector, routine=False):
         self.selector = selector
+        self.routine = routine
 
     def __call__(self, machine, tree):
         pagelinks = htmlparsing.getlinks(machine.gethtml(encoding=tree.config.encoding), self.selector)
-        tree.loadpagelinks(pagelinks)
+        tree.loadpagelinks(pagelinks, self.selector)
 
 
 class ActionNextpage:
-    def __init__(self, selector):
+    def __init__(self, selector, routine=False):
         self.selector = selector
+        self.routine = routine
 
     def __call__(self, machine, tree):
         nextlinks = htmlparsing.getlinks(machine.gethtml(encoding=tree.config.encoding), self.selector)
-        tree.loadnextlinks(nextlinks)
+        tree.loadnextlinks(nextlinks, self.selector)
 
 
 class ActionGetcontent:
-    def __init__(self, selectors, alias=None, parentselector=None):
+    def __init__(self, selectors, alias=None, parentselector=None, routine=False):
         self.selectors = selectors
+        self.routine = routine
         self.parentselector = parentselector
         self.alias = alias
 

@@ -1,6 +1,7 @@
 class Page:
-    def __init__(self, url, parent, parser):
+    def __init__(self, url, parent, parser, selector):
         self.url = url
+        self.selector = selector
         self.childs = []
         self.parent = parent
         self.parser = parser
@@ -20,6 +21,8 @@ class Page:
         return ret
 
     def isleaf(self):
+        if not self.childs:
+            return True
         if len(self.childs) == 0:
             return True
         return False
@@ -35,13 +38,3 @@ class Page:
             self.childs.remove(child)
         else:
             return None
-
-    def removeself(self):
-        if self.parent:
-            self.parent.removechild(self)
-        else:
-            return None
-
-    def open(self, machine):
-        self.parser.run(machine, self)
-        self.opened = True
