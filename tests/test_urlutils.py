@@ -1,4 +1,4 @@
-from urlutils import Url
+from webscraper.urlutils import Url
 
 
 def test_url():

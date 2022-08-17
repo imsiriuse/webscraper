@@ -1,6 +1,6 @@
-from firefoxmachine import FirefoxMachine
+from webscraper.firefoxmachine import FirefoxMachine
 from selenium.webdriver.common.by import By
-from timeout import Timeout
+from webscraper.timeout import Timeout
 
 
 def test_loadurl():

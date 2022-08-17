@@ -1,14 +1,14 @@
 import pytest
-import webscraper
-
-class TestTree(Tree):
-    def __init__(self, name: str):
-        self.name: str = name
+from webscraper.tree import *
+        
+def test_children():
+    class TTree(Tree):
+        def __init__(self, name: str):
+            self.name: str = name
        
     def __repr__(self) -> str:
         return name
-        
-def test_children():
-    a = TestTree("a")
+
+    a = TTree("a")
     print(a.name)
     
