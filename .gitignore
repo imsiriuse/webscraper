@@ -5,3 +5,4 @@ __pycache__/
 .vscode/
 geckodriver.log
 tests/.geckodriver.log
+*.egg*/
