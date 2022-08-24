@@ -1,7 +1,7 @@
-from actions import *
-from actionsnode import ActionsNode
-from firefoxmachine import FirefoxMachine
-from timeout import Timeout
+from webscraper.actions import *
+from webscraper.actionsnode import ActionsNode
+from webscraper.firefoxmachine import FirefoxMachine
+from webscraper.timeout import Timeout
 
 
 class Config:

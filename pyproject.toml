@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "webscraper"
 description = "Thieves tools for twenty gold pieces"
-version = 0.0.1
+version = "0.0.1"
 requires-python = ">=3.10"
 dependencies = [
-    selenium,
-    bs4,
-    fake-useragent,
-    webdriver-manager
+    "selenium",
+    "bs4",
+    "fake-useragent",
+    "webdriver-manager"
 ]
 
 [tool.setuptools]
