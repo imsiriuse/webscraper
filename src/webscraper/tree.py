@@ -1,4 +1,4 @@
-import page
+from webscraper import page
 import random
 from random import randint
 

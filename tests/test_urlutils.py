@@ -56,6 +56,7 @@ def test_url():
         if urlmain != "flyandlure.org/articles/fly_fishing/fly_fishing_diary_july_2020":
             assert False
     except NotImplementedError as e:
+        print(e)
         assert False
 
     assert True

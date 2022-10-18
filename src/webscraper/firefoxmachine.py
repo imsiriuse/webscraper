@@ -1,4 +1,4 @@
-from .machine import Machine
+from webscraper.machine import Machine
 from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
