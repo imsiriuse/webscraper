@@ -20,7 +20,8 @@ dependencies = [
     "fake-useragent",
     "webdriver-manager",
     "pytest",
-    "ultimate-sitemap-parser"
+    "ultimate-sitemap-parser",
+    "psycopg2"
 ]
 
 [tool.setuptools]

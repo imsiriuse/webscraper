@@ -6,6 +6,22 @@ import os
 import re
 from collections import Counter
 import random
+import glob
+
+
+def readfiles(folderpath, n=None, ext=""):
+    filenames = glob.glob(folderpath + "/*" + ext)
+
+    if not n:
+        n = len(filenames)
+
+    results = []
+    for i in range(n):
+        f = open(filenames[i], "r")
+        results.append(f.read())
+        f.close()
+
+    return results
 
 
 def getsitemaplinks(url):

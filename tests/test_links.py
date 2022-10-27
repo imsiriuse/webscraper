@@ -1,5 +1,16 @@
-from tmu.links import getsitemaplinks
-from tmu.links import batchdownload
+from tmu.links import *
+
+
+def test_readfiles():
+    try:
+        contents = readfiles("data/html-rawdata")
+
+        if len(contents) != 100:
+            assert False
+    except Exception as e:
+        print(e)
+        assert False
+    assert True
 
 
 def test_getsitemaplinks():
