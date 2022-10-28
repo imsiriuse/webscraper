@@ -7,10 +7,10 @@ class Parser:
         self.entries = entries
         self.name = name
         self.results = []
-        for entry in self.entries:
+        for entry in range(len(self.entries)):
             self.results.append([])
 
-    def parsehtmlcont(self, html):
+    def parsehtml(self, html):
         soup = BeautifulSoup(html)
 
         result = {}
@@ -19,15 +19,11 @@ class Parser:
 
         return result
 
-    def parsehtml(self, html):
-        return self.parsehtmlcont(html)
-
 
 class DbParser(Parser):
     def __init__(self, entries, name):
         super().__init__(entries, name)
         self.dbconnection = None
-        self.cursor = None
 
     def dbconnect(self, dbname, user="postgres", password="postgres", host="localhost", port="5432"):
         self.dbconnection = psycopg2.connect(
@@ -37,25 +33,28 @@ class DbParser(Parser):
             password=password,
             port=port
         )
-        self.cursor = self.dbconnection.cursor()
 
     def dbdisconnect(self):
-        self.cursor.close()
+        # if self.dbconnection:
+        #     self.dbconnection.close()
         self.dbconnection.close()
-        self.cursor = None
-        self.dbconnection = None
 
     def inittable(self):
-        command = "CREATE TABLE " + self.name + " ( id BIGSERIAL NOT NULL PRIMARY KEY "
+        cursor = self.dbconnection.cursor()
+        cmd = "CREATE TABLE IF NOT EXISTS " + self.name + " ( id BIGSERIAL NOT NULL PRIMARY KEY"
         for entry in self.entries:
-            command = command + entry.name
+            cmd = cmd + ", " + entry.name
             if not entry.maxlength:
-                command = ", " + command + "TEXT "
+                cmd = cmd + " TEXT"
             else:
-                command = ", " + command + "VARCHAR(" + entry.maxlength + ") "
-        command = command + ");"
-        return command
-
-    def parsehtml(self, html):
-        result = self.parsehtmlcont(html)
-        return result
+                cmd = cmd + " VARCHAR(" + entry.maxlength + ")"
+        cmd = cmd + ");"
+        for entry in self.entries:
+            cmd = cmd + "ALTER TABLE " + self.name + " ADD COLUMN IF NOT EXISTS "
+            if not entry.maxlength:
+                cmd = cmd + entry.name + " TEXT; "
+            else:
+                cmd = cmd + entry.name + " VARCHAR(" + entry.maxlength + "); "
+        cursor.execute(cmd)
+        cursor.close()
+        self.dbconnection.commit()

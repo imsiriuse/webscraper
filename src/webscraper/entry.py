@@ -4,8 +4,9 @@ class Entry:
         self.selector = selector
         self.maxlength = maxlength
 
-    def parse(self):
-        pass
+    def __str__(self):
+        res = self.name + ": " + self.selector + " "
+        return res
 
 
 class ArrayEntry(Entry):
