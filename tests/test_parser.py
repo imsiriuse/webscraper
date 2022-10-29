@@ -1,7 +1,7 @@
 from webscraper.parser import DbParser
 from webscraper.entry import Entry
-from tmu.links import readfiles
 import pytest
+import glob
 
 
 @pytest.fixture
@@ -9,7 +9,7 @@ def config():
     recipe = [
         Entry(
             name="category",
-            selector=".bredcrumbs-section"
+            selector=".breadcrumb > li:not(.hide_content_breadcrumbs)"
         ),
         Entry(
             name="title",
@@ -21,23 +21,19 @@ def config():
         ),
         Entry(
             name="calories",
-            selector=".cal-per-serv-amount",
-            maxlength="10"
+            selector=".cal-per-serv-amount"
         ),
         Entry(
             name="yields",
-            selector=".yields-amount",
-            maxlength="10"
+            selector=".yields-amount"
         ),
         Entry(
             name="cooktime",
-            selector=".cook-time-amount",
-            maxlength="10"
+            selector=".cook-time-amount"
         ),
         Entry(
             name="totaltime",
-            selector=".total-time-amount",
-            maxlength="10"
+            selector=".total-time-amount"
         ),
         Entry(
             name="ingredients",
@@ -46,28 +42,21 @@ def config():
         Entry(
             name="directions",
             selector=".direction-lists"
-        ),
-        Entry(
-            name="diresjkhdsfkj",
-            selector=".directioasidhadn-lists"
-        ),
-        Entry(
-            name="diresjkhdsfkj",
-            selector=".directioasidhadn-lists",
-            maxlength="50"
         )
     ]
-    pytest.parser = DbParser(entries=recipe, name="recipe")
+    pytest.parser = DbParser(
+        entries=recipe,
+        name="recipe",
+        host="46.36.41.120",
+        user="parser",
+        dbname="parser",
+        password="maxim23.error"
+    )
 
 
 def test_dbconnect(config):
     try:
-        pytest.parser.dbconnect(
-            host="46.36.41.120",
-            user="parser",
-            dbname="parser",
-            password="maxim23.error"
-        )
+        pytest.parser.dbconnect()
     except Exception as e:
         print(e)
         assert False
@@ -76,22 +65,27 @@ def test_dbconnect(config):
     assert True
 
 
-def test_inittable(config):
+def test_inittables(config):
     try:
-        pytest.parser.dbconnect(
-            host="46.36.41.120",
-            user="parser",
-            dbname="parser",
-            password="maxim23.error"
-        )
-        pytest.parser.inittable()
+        pytest.parser.dbconnect()
+        pytest.parser.inittables()
 
         cursor = pytest.parser.dbconnection.cursor()
-        cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name=\'recipe\';")
+
+        cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name=\'" + pytest.parser.name + "\';")
         columns = cursor.fetchall()
         for entry in pytest.parser.entries:
             if (entry.name,) not in columns:
                 assert False
+
+        for entry in pytest.parser.entries:
+            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name=\'" + entry.name + "\';")
+            columns = cursor.fetchall()
+            if ("id",) not in columns:
+                assert False
+            if ("content",) not in columns:
+                assert False
+
         cursor.close()
 
     except Exception as e:
@@ -102,15 +96,27 @@ def test_inittable(config):
     assert True
 
 
-def test_parsehtml():
+def test_parsehtml(config):
     try:
-        contents = readfiles("data/html-rawdata")
+        pytest.parser.dbconnect()
+        pytest.parser.inittable()
 
-        result = parser.parsehtml(contents[0])
+        filenames = glob.glob("data/html-rawdata/*")
 
-        print(result)
+        n = len(filenames)
+        contents = []
+        for i in range(n):
+            f = open(filenames[i], "r")
+            contents.append(f.read())
+            f.close()
+
+        print("\n")
+        for content in contents:
+            pytest.parser.parsehtml(content)
 
     except Exception as e:
         print(e)
         assert False
+    finally:
+        pytest.parser.dbdisconnect()
     assert True
