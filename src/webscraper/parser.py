@@ -8,22 +8,19 @@ class Parser:
         self.name = name
         self.selector = selector
 
-    @staticmethod
-    def tagstotext(tags):
-        result = ""
-
-        for tag in tags:
-            result = result + " ".join(tag.get_text().split())
-        return result
-
     def parsehtml(self, html):
         soup = BeautifulSoup(html, "html5lib")
 
-        result = {}
+        results = {}
         for entry in self.entries:
-            result[entry.name] = soup.select(entry.selector)
+            tags = soup.select(entry.selector)
+            if len(tags) != 0:
+                results[entry.name] = tags
 
-        return result
+        if len(results) == 0:
+            return None
+
+        return results
 
 
 class DbParser(Parser):
@@ -50,39 +47,33 @@ class DbParser(Parser):
             self.dbconnection.close()
 
     def inittables(self):
-        # creating main table of parser
-        cmd = "CREATE TABLE IF NOT EXISTS " + self.name + " ( id SERIAL NOT NULL PRIMARY KEY); "
-        for entry in self.entries:
-            cmd = cmd + "\nALTER TABLE " + self.name + " ADD COLUMN IF NOT EXISTS " + entry.name + " INT; "
-
-        # creating tables for entries
-        for entry in self.entries:
-            cmd = cmd + "\nCREATE TABLE IF NOT EXISTS " + entry.name + " ( id SERIAL NOT NULL PRIMARY KEY, content TEXT NOT NULL);"
-
         cursor = self.dbconnection.cursor()
-        cursor.execute(cmd)
+
+        cursor.execute("CREATE TABLE IF NOT EXISTS " + self.name + " ( id SERIAL NOT NULL PRIMARY KEY, content TEXT NOT NULL);")
+        for entry in self.entries:
+            cursor.execute("CREATE TABLE IF NOT EXISTS " + entry.name + " ( id SERIAL NOT NULL PRIMARY KEY, content TEXT NOT NULL," + self.name + "_id INT REFERENCES " + self.name + "(id));")
+
         cursor.close()
         self.dbconnection.commit()
 
-    def parsehtml(self, html):
-        soup = BeautifulSoup(html, "html5lib")
+    def insertrow(self, html, filename):
+        results = self.parsehtml(html)
 
-        columns = []
-        values = []
-        for entry in self.entries:
-            results = soup.select(entry.selector)
-            if len(results) != 0:
-                columns.append(entry)
-                values.append(self.tagstotext(results))
-
-        if len(values) == 0:
+        if not results:
             return None
 
-        cmd = ""
+        cursor = self.dbconnection.cursor()
 
-        print(cmd)
+        cursor.execute("INSERT INTO " + self.name + "(content) VALUES(%s) RETURNING id;", (filename,))
+        mainid = cursor.fetchone()[0]
 
-        # cursor = self.dbconnection.cursor()
-        # cursor.execute(cmd, values)
-        # cursor.close()
-        # self.dbconnection.commit()
+        for column in results:
+            tags = results[column]
+
+            for tag in tags:
+                text = " ".join(tag.get_text().split())
+                cmd = "INSERT INTO " + column + "(content, " + self.name + "_id) VALUES ( %s, %s);"
+                cursor.execute(cmd, (text, mainid))
+
+        cursor.close()
+        self.dbconnection.commit()

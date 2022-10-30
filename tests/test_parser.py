@@ -2,7 +2,7 @@ from webscraper.parser import DbParser
 from webscraper.entry import Entry
 import pytest
 import glob
-
+import codecs
 
 @pytest.fixture
 def config():
@@ -37,7 +37,7 @@ def config():
         ),
         Entry(
             name="ingredients",
-            selector=".ingredients-body"
+            selector=".ingredient-item"
         ),
         Entry(
             name="directions",
@@ -65,18 +65,39 @@ def test_dbconnect(config):
     assert True
 
 
+def test_getid(config):
+    try:
+        pytest.parser.dbconnect()
+        pytest.parser.inittables()
+        cursor = pytest.parser.dbconnection.cursor()
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS sldkfj(id SERIAL PRIMARY KEY, content TEXT);
+            INSERT INTO sldkfj(content) VALUES(\'pcxx\');
+            INSERT INTO sldkfj(content) VALUES(\'pcxx\');
+            INSERT INTO sldkfj(content) VALUES(\'pcxx\');
+            """)
+
+        result = pytest.parser.getid("sldkfj", "pcxx")
+        if result != 1:
+            assert False
+        result = pytest.parser.getid("sldkfj", "xxcp")
+        if result is not None:
+            assert False
+        cursor.execute("DROP TABLE IF EXISTS sldkfj;")
+        cursor.close()
+    except Exception as e:
+        print(e)
+        assert False
+    finally:
+        pytest.parser.dbdisconnect()
+    assert True
+
+
 def test_inittables(config):
     try:
         pytest.parser.dbconnect()
         pytest.parser.inittables()
-
         cursor = pytest.parser.dbconnection.cursor()
-
-        cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name=\'" + pytest.parser.name + "\';")
-        columns = cursor.fetchall()
-        for entry in pytest.parser.entries:
-            if (entry.name,) not in columns:
-                assert False
 
         for entry in pytest.parser.entries:
             cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name=\'" + entry.name + "\';")
@@ -84,6 +105,8 @@ def test_inittables(config):
             if ("id",) not in columns:
                 assert False
             if ("content",) not in columns:
+                assert False
+            if (pytest.parser.name + "_id",) not in columns:
                 assert False
 
         cursor.close()
@@ -96,23 +119,18 @@ def test_inittables(config):
     assert True
 
 
-def test_parsehtml(config):
+def test_insertrow(config):
     try:
         pytest.parser.dbconnect()
-        pytest.parser.inittable()
+        pytest.parser.inittables()
 
-        filenames = glob.glob("data/html-rawdata/*")
+        filenames = glob.glob("D:/data-mining/todo/goodhousekeeping.com/rawdata/*")
 
-        n = len(filenames)
-        contents = []
-        for i in range(n):
-            f = open(filenames[i], "r")
-            contents.append(f.read())
-            f.close()
-
-        print("\n")
-        for content in contents:
-            pytest.parser.parsehtml(content)
+        for filename in filenames:
+            with codecs.open(filename, 'r', encoding='utf-8', errors='ignore') as f:
+                print("parsing: " + filename)
+                pytest.parser.insertrow(f.read(), filename)
+                f.close()
 
     except Exception as e:
         print(e)
