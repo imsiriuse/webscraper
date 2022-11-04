@@ -34,29 +34,29 @@ class Url:
             self.queries[pair[0]] = pair[1]
 
     def __str__(self):
-        str = self.scheme + "://"
-        str = str + self.hostname
+        s = self.scheme + "://"
+        s = s + self.hostname
         if self.paths and len(self.paths) != 0:
             for path in self.paths:
-                str = str + '/' + path
-        return str
+                s = s + '/' + path
+        return s
 
     def full(self) -> str:
-        str = self.scheme + "://"
-        str = str + self.hostname
+        s = self.scheme + "://"
+        s = s + self.hostname
 
         if len(self.paths) != 0:
             for path in self.paths:
-                str = str + '/' + path
+                s = s + '/' + path
 
         if len(self.queries) != 0:
-            str = str + '?'
+            s = s + '?'
             for key in self.queries:
-                str = str + key + '=' + self.queries[key]
+                s = s + key + '=' + self.queries[key]
 
         if self.fragment and self.fragment != '':
-            str = str + "#" + self.fragment
-        return str
+            s = s + "#" + self.fragment
+        return s
 
     def __eq__(self, other):
         if not isinstance(other, Url) and not isinstance(other, str):
@@ -71,3 +71,6 @@ class Url:
             return False
 
         return True
+
+    def tofilename(self):
+        return "-".join(self.paths)
