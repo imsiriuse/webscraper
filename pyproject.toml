@@ -21,7 +21,8 @@ dependencies = [
     "webdriver-manager",
     "pytest",
     "ultimate-sitemap-parser",
-    "psycopg2"
+    "psycopg2",
+    "pandas"
 ]
 
 [tool.setuptools]

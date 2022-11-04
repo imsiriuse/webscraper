@@ -1,8 +1,8 @@
 from webscraper.parser import DbParser
 from webscraper.entry import Entry
 import pytest
-import glob
 import codecs
+
 
 @pytest.fixture
 def config():
@@ -124,11 +124,17 @@ def test_insertrow(config):
         pytest.parser.dbconnect()
         pytest.parser.inittables()
 
-        filenames = glob.glob("D:/data-mining/todo/goodhousekeeping.com/rawdata/*")
+        # filenames = glob.glob("data/html-rawdata/*")
+
+        filenames = [
+            "data/html-rawdata/recipe1.html",
+            "data/html-rawdata/recipe2.html",
+            "data/html-rawdata/recipe3.html"
+        ]
 
         for filename in filenames:
+            print("parsing: " + filename)
             with codecs.open(filename, 'r', encoding='utf-8', errors='ignore') as f:
-                print("parsing: " + filename)
                 pytest.parser.insertrow(f.read(), filename)
                 f.close()
 

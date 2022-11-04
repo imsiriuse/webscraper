@@ -6,4 +6,3 @@ __pycache__/
 geckodriver.log
 tests/.geckodriver.log
 *.egg*/
-tests/data
