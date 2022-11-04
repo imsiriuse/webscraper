@@ -22,7 +22,8 @@ dependencies = [
     "pytest",
     "ultimate-sitemap-parser",
     "psycopg2",
-    "pandas"
+    "pandas",
+    "nltk"
 ]
 
 [tool.setuptools]

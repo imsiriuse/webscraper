@@ -1,11 +1,21 @@
-from tmu.tableparser import Tableparser
+from tmu.tableparser import *
+import pytest
+
+
+@pytest.fixture
+def config():
+    pytest.table = loadfromdb(
+        tablename="ingredients",
+        host="46.36.41.120",
+        user="parser",
+        dbname="recipes",
+        pwd="maxim23.error"
+    )
 
 
 def test_loadcsv():
     try:
-        parser = Tableparser()
-        parser.loadcsv(filename="data/ingredients.csv")
-        print(parser.table)
+        loadcsv(filename="data/ingredients.csv")
     except Exception as e:
         print(e)
         assert False
@@ -14,17 +24,14 @@ def test_loadcsv():
 
 def test_loadfromdb():
     try:
-        parser = Tableparser()
-        parser.loadfromdb(
+        loadfromdb(
             tablename="ingredients",
             host="46.36.41.120",
             user="parser",
             dbname="recipes",
             pwd="maxim23.error"
         )
-        print(parser.table)
     except Exception as e:
         print(e)
         assert False
     assert True
-
