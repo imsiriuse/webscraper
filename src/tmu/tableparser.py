@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 import psycopg2
 import pandas.io.sql as sqlio
@@ -27,9 +28,9 @@ def savecsv(table, filename="output.csv", delimiter=";"):
         table.to_csv(path_or_buf=csv_file, sep=delimiter, encoding="utf8")
 
 
-def loadparser(filename):
-    j = json.loads(filename)
-    return Tableparser(**j)
+def loadparser(filename="test.parser"):
+    with open(filename, 'rb') as read_file:
+        return pickle.load(read_file)
 
 
 class Token:
@@ -37,33 +38,67 @@ class Token:
         self.string = string
         self.tag = tag
 
+    def __str__(self):
+        return self.string
+
+    def __hash__(self):
+        return hash(self.string)
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other):
+        return self.string == other.string
+
+    def __lt__(self, other):
+        return self.string < other.string
+
+    def __gt__(self, other):
+        return self.string > other.string
+
 
 class Tableparser:
-    def __init__(self):
-        self.table = None
-        self.dict = set()
+    def __init__(self, table):
+        self.source = table
+
+        self.dict = {}
         self.paragraphs = []
+        for row in table:
+            token = Token(string=row)
+            self.paragraphs.append([token])
+            if token in self.dict:
+                self.dict[token] = self.dict[row] + 1
+            else:
+                self.dict[token] = 1
 
-    def loadtable(self, table, column):
-        self.table = table
-        for row in table[column]:
-            tokens = []
-            for elem in word_tokenize(row):
-                tokens.append(Token(string=elem))
-                self.dict.add(elem)
-            self.paragraphs.append(tokens)
+    def save(self, filename="test.parser"):
+        with open(filename, 'wb') as file_object:
+            pickle.dump(self, file_object)
 
-    def save(self, filename):
-        with open(filename, 'w', encoding="utf8") as f:
-            pickle.dump(self, f)
-            f.close()
+    def tokenize(self, regex="\s+"):
+        for token in self.dict:
+            splits = re.split(regex, token.string)
+            if len(splits) == 1:
+                continue
+            for split in splits:
+                if split in self.dict:
+                    self.dict[split] = self.dict[split] + 1
+                else:
+                    self.dict[split] = 1
+            del self.dict[token]
 
     def printdict(self):
         for row in sorted(list(self.dict)):
-            print(row)
+            print(str(self.dict[row]) + ": " + row)
 
-    def tolowercase(self):
-        for paragraph in self.paragraphs:
-            for elem in paragraph:
-                elem.string = elem.string.lower()
-        self.dict = set(map(lambda x: x.lower(), self.dict))
+    #def tolowercase(self):
+    #    self.dict = set(map(lambda x: str.lower(x.string), self.dict))
+
+    # def grep(self, regex):
+    #     for paragraph in self.paragraphs:
+    #        for token in paragraph:
+    #            if re.match(regex, token.string):
+    #                print(paragraph)
+
+
+parser = Tableparser(loadcsv()["content"])
