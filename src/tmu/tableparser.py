@@ -1,104 +1,84 @@
 import re
-import pandas as pd
-import psycopg2
-import pandas.io.sql as sqlio
-from nltk.tokenize import word_tokenize
-import json
-import pickle
-
-
-def loadcsv(filename="input.csv", delimiter=";"):
-    if filename is None or not filename.endswith(".csv"):
-        raise NotImplementedError
-
-    return pd.read_csv(filename, delimiter=delimiter)
-
-
-def loadfromdb(tablename, host="localhost", user="postgres", pwd="postgres", dbname="postgres", port="5432"):
-    # table = loadfromdb("ingredients", host="inrightplace.com", user="parser", pwd="maxim23.error", dbname="recipes")
-    conn = psycopg2.connect("host='{}' port={} dbname='{}' user={} password={}".format(host, port, dbname, user, pwd))
-    sql = "select * from " + tablename + ";"
-    table = sqlio.read_sql_query(sql, conn)
-    conn.close()
-    return table
-
-
-def savecsv(table, filename="output.csv", delimiter=";"):
-    with open(filename, 'w', encoding="utf8") as csv_file:
-        table.to_csv(path_or_buf=csv_file, sep=delimiter, encoding="utf8")
-
-
-def loadparser(filename="test.parser"):
-    with open(filename, 'rb') as read_file:
-        return pickle.load(read_file)
 
 
 class Token:
-    def __init__(self, string, tag=None):
+    def __init__(self, string, tag=None, paragraphs=[], num=1):
         self.string = string
         self.tag = tag
+        self.paragraphs = paragraphs
+        self.num = num
 
     def __str__(self):
-        return self.string
-
-    def __hash__(self):
-        return hash(self.string)
-
-    def __repr__(self):
-        return str(self)
-
-    def __eq__(self, other):
-        return self.string == other.string
-
-    def __lt__(self, other):
-        return self.string < other.string
-
-    def __gt__(self, other):
-        return self.string > other.string
+        return self.string + " tag: " + str(self.tag) + " : " + str(self.paragraphs) + " : " + str(self.num) + "\n"
 
 
 class Tableparser:
     def __init__(self, table):
-        self.source = table
-
         self.dict = {}
         self.paragraphs = []
+
         for row in table:
-            token = Token(string=row)
-            self.paragraphs.append([token])
-            if token in self.dict:
-                self.dict[token] = self.dict[row] + 1
+            if row in self.dict:
+                token = self.dict[row]
             else:
-                self.dict[token] = 1
+                token = Token(row)
+                self.dict[row] = token
 
-    def save(self, filename="test.parser"):
-        with open(filename, 'wb') as file_object:
-            pickle.dump(self, file_object)
-
-    def tokenize(self, regex="\s+"):
-        for token in self.dict:
-            splits = re.split(regex, token.string)
-            if len(splits) == 1:
-                continue
-            for split in splits:
-                if split in self.dict:
-                    self.dict[split] = self.dict[split] + 1
-                else:
-                    self.dict[split] = 1
-            del self.dict[token]
+            paragraph = [token]
+            self.paragraphs.append(paragraph)
+            token.paragraphs.append(paragraph)
 
     def printdict(self):
         for row in sorted(list(self.dict)):
-            print(str(self.dict[row]) + ": " + row)
+            print("[" +row +"]=" + str(self.dict[row]))
 
-    #def tolowercase(self):
-    #    self.dict = set(map(lambda x: str.lower(x.string), self.dict))
+    def arrayinsert(self, paragraph, what, where):
+        paragraph[paragraph.index(where):paragraph.index(where)] = what
+        paragraph.remove(where)
 
-    # def grep(self, regex):
-    #     for paragraph in self.paragraphs:
-    #        for token in paragraph:
-    #            if re.match(regex, token.string):
-    #                print(paragraph)
+    def splittoken(self, regex, oldtoken):
+        splits = regex.split(oldtoken.string)
+        newtokens = []
+        for split in splits:
+            if split in self.dict:
+                newtoken = self.dict[split]
+            else:
+                newtoken = Token(split, oldtoken.tag, oldtoken.paragraphs, oldtoken.num)
+            newtokens.append(newtoken)
+        return newtokens
+
+    def tokenize(self, r='\s+'):
+        regex = re.compile(r)
+
+        newtokens = []
+        oldtokens = []
+        for key, oldtoken in self.dict.items():
+            if not regex.search(key):
+                continue
+            splits = self.splittoken(regex, oldtoken)
+            for oldparagraph in oldtoken.paragraphs:
+                print(oldparagraph + ": " + splits + "; " + oldtoken.string)
+                self.arrayinsert(oldparagraph, splits, oldtoken)
+            newtokens = newtokens + splits
+            oldtokens = oldtokens + oldtoken
+
+        for newtoken in newtokens:
+            self.dict[newtoken.string] = newtoken
+        for oldtoken in oldtokens:
+            del self.dict[oldtoken.string]
+
+    def tolowercase(self):
+        pass
+
+    def grep(self, r):
+        pass
+
+    def strip(self, regex):
+        pass
 
 
-parser = Tableparser(loadcsv()["content"])
+# parser = Tableparser(loadcsv()["content"])
+parser = Tableparser(["one", "two three", "four"])
+# parser.tokenize()
+# parser.replacechars("!%")
+# parser.printdict()

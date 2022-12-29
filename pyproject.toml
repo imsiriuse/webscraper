@@ -23,7 +23,7 @@ dependencies = [
     "ultimate-sitemap-parser",
     "psycopg2",
     "pandas",
-    "nltk"
+    "spacy"
 ]
 
 [tool.setuptools]
