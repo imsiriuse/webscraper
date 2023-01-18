@@ -1,11 +1,11 @@
-from tmu.udparser import Udparser
+from models.ingredients.model import IngredientsTagger
 from tmu.inout import *
 import pytest
 
 
 @pytest.fixture
 def config():
-    pytest.parser = Udparser(loadcsv(filename="data/input.csv")["content"][0:10])
+    pytest.parser = IngredientsTagger(table=loadcsv(filename="data/input.csv")["content"][0:10])
 
 
 def test_printdict(config):
@@ -13,7 +13,7 @@ def test_printdict(config):
     try:
         parser = pytest.parser
 
-        parser.printdict()
+        print(str(parser))
 
     except Exception as e:
         print(e)
